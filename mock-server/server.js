@@ -1,22 +1,22 @@
 /**
- * Mock API server for the take-home assignment.
+ * 과제용 Mock API 서버.
  *
- * Built on top of json-server for convenient defaults (CORS, logger,
- * body parser). Every route below is implemented by hand because:
- *   - login can't be auto-generated
- *   - cursor-based pagination can't be auto-generated
- *   - environment selection differs between endpoints (intentional)
+ * 편리한 기본값(CORS, logger, body parser)을 위해 json-server 위에
+ * 구축했습니다. 아래 라우트들은 모두 수동으로 구현되어 있는데, 이유는:
+ *   - login은 자동 생성할 수 없고
+ *   - cursor 기반 페이지네이션도 자동 생성할 수 없고
+ *   - 엔드포인트마다 환경 선택 방식이 다르기 때문입니다(의도적).
  *
- * The server periodically modifies its in-memory data: every few seconds
- * it adds a new transaction or moves a `pending` transaction to
- * `succeeded` / `failed`. How clients keep their view in sync is up to
- * them.
+ * 서버는 메모리 내 데이터를 주기적으로 변경합니다. 몇 초마다 새
+ * 트랜잭션을 추가하거나 `pending` 트랜잭션을 `succeeded` / `failed`
+ * 상태로 전이시킵니다. 클라이언트가 이 변화를 어떻게 동기화할지는
+ * 구현자 선택입니다.
  *
- * NOTE TO READERS: The API here is a starting point, not a finished
- * contract. Some choices are deliberately rough. Don't "fix" them
- * silently — change them in your fork and write up your reasoning in
- * your project README. If you want to add or change endpoints, do so
- * and explain why.
+ * 읽는 분께: 이 API는 완성된 계약이 아니라 출발점입니다. 일부 선택은
+ * 의도적으로 거칠게 남겨두었습니다. 이를 조용히 "고치지" 말고, 자신의
+ * 포크에서 변경한 뒤 그 이유를 프로젝트 README에 적어주세요.
+ * 엔드포인트를 추가하거나 변경하고 싶다면 그렇게 하고, 왜 그랬는지
+ * 설명해 주세요.
  */
 
 const path = require('path');
@@ -27,9 +27,9 @@ const server = jsonServer.create();
 const middlewares = jsonServer.defaults({ logger: true });
 
 // ---------------------------------------------------------------------------
-// In-memory state
-// Loaded once from db.json at startup. All mutations stay in memory —
-// restart the server to reset.
+// 메모리 내 상태
+// 시작 시 db.json을 한 번만 읽어옵니다. 모든 변경은 메모리에만 반영되며,
+// 서버를 재시작하면 초기 상태로 돌아갑니다.
 // ---------------------------------------------------------------------------
 
 const dbPath = path.join(__dirname, 'db.json');
@@ -46,7 +46,7 @@ const counters = {
 };
 
 // ---------------------------------------------------------------------------
-// Helpers
+// 헬퍼 함수
 // ---------------------------------------------------------------------------
 
 const VALID_USER = {
@@ -89,8 +89,8 @@ function pick(arr) {
 }
 
 // ---------------------------------------------------------------------------
-// Middleware: small artificial latency on REST calls so loading
-// states are visible in the UI.
+// 미들웨어: REST 호출에 작은 인위적 지연을 넣어서 UI에서 로딩 상태가
+// 보이도록 합니다.
 // ---------------------------------------------------------------------------
 
 server.use(jsonServer.bodyParser);
@@ -117,8 +117,8 @@ server.post('/api/auth/login', (req, res) => {
 
 // ---------------------------------------------------------------------------
 // GET /api/transactions?env=&limit=&cursor=
-//   environment via QUERY PARAM
-//   list returns a SUBSET of fields per row
+//   환경은 QUERY PARAM으로 받음
+//   목록 응답은 각 행에 필요한 필드 일부만 반환
 // ---------------------------------------------------------------------------
 
 server.get('/api/transactions', requireAuth, (req, res) => {
@@ -158,7 +158,7 @@ server.get('/api/transactions', requireAuth, (req, res) => {
 
 // ---------------------------------------------------------------------------
 // GET /api/transactions/:id
-//   environment via X-Environment HEADER (intentionally different from list)
+//   환경은 X-Environment HEADER로 받음 (목록과 의도적으로 다름)
 // ---------------------------------------------------------------------------
 
 server.get('/api/transactions/:id', requireAuth, (req, res) => {
@@ -174,11 +174,11 @@ server.get('/api/transactions/:id', requireAuth, (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// Periodic data changes
-//   Every ~6 seconds per env, do one of:
-//     - create a new transaction (often pending, will resolve later)
-//     - resolve a pending transaction to succeeded or failed
-//   Clients are responsible for keeping their view in sync.
+// 주기적인 데이터 변경
+//   환경별로 약 6초마다 아래 중 하나를 수행:
+//     - 새 트랜잭션 생성 (대개 pending으로 시작하고 나중에 확정됨)
+//     - pending 트랜잭션 하나를 succeeded 또는 failed로 전이
+//   클라이언트는 이 변화를 직접 동기화해야 함.
 // ---------------------------------------------------------------------------
 
 const NEW_CUSTOMERS = {
@@ -212,7 +212,7 @@ function makeNewTransaction(env) {
   const id = `${env === 'sandbox' ? 'txn_test' : 'txn_live'}_${pad(idx, 6)}`;
   const now = new Date().toISOString();
 
-  // 70% start pending, 25% start succeeded, 5% start failed.
+  // 70%는 pending으로 시작, 25%는 succeeded, 5%는 failed로 시작.
   const r = Math.random();
   const status = r < 0.7 ? 'pending' : r < 0.95 ? 'succeeded' : 'failed';
 
@@ -281,17 +281,17 @@ function tick(env) {
   const action = Math.random();
   if (action < 0.55) {
     const tx = makeNewTransaction(env);
-    state[env].unshift(tx); // newest first
+    state[env].unshift(tx); // 최신 항목이 앞에 오도록 유지
   } else if (action < 0.9) {
     resolveOnePending(env);
   }
-  // ~10% no-op: a quiet tick.
+  // 약 10%는 아무 일도 하지 않음.
 }
 
 const TICK_INTERVAL_MS = parseInt(process.env.TICK_INTERVAL_MS, 10) || 6000;
 let tickHandle = null;
 if (TICK_INTERVAL_MS > 0) {
-  // Offset envs slightly so events don't perfectly align.
+  // 두 환경의 변화 시점이 완전히 겹치지 않도록 약간 어긋나게 함.
   setTimeout(() => tick('sandbox'), 2000);
   setTimeout(() => tick('production'), 4000);
   tickHandle = setInterval(() => {
@@ -301,7 +301,7 @@ if (TICK_INTERVAL_MS > 0) {
 }
 
 // ---------------------------------------------------------------------------
-// Catch-all
+// 나머지 모든 경로 처리
 // ---------------------------------------------------------------------------
 
 server.use((req, res) => {

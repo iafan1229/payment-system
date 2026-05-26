@@ -1,11 +1,13 @@
 /**
- * Generates db.json with seed data for sandbox and production environments.
+ * sandbox와 production 환경용 시드 데이터를 담은 db.json을 생성합니다.
  *
- * Deterministic — same output every run. Run with: `node seed.js`.
+ * 결정론적 방식으로 동작하므로, 매 실행마다 같은 결과가 나옵니다.
+ * 실행 방법: `node seed.js`
  *
- * Sandbox data is intentionally "test-looking" (e.g. card last4 = 4242,
- * obvious test customer names). Production data is more realistic.
- * This gives candidates room to add visual differentiation between envs.
+ * Sandbox 데이터는 의도적으로 "테스트처럼 보이게" 만들었습니다
+ * (예: 카드 마지막 4자리 = 4242, 티가 나는 테스트용 고객 이름).
+ * Production 데이터는 좀 더 실제 데이터처럼 보이게 구성했습니다.
+ * 이를 통해 후보자가 환경별 시각적 구분을 넣을 여지를 남깁니다.
  */
 
 const fs = require('fs');
@@ -70,9 +72,9 @@ const PRODUCTION_CURRENCY_WEIGHTS = [
   { value: 'jpy', weight: 1 },
   { value: 'gbp', weight: 1 },
 ];
-
+// 어떤 값은 더 자주 나오게 만드는 코드
 function pickWeighted(rng, items) {
-  // items: [{ value, weight }]
+  // items 형태: [{ value, weight }]
   const total = items.reduce((s, it) => s + it.weight, 0);
   let r = rng() * total;
   for (const it of items) {
@@ -88,12 +90,12 @@ function pick(rng, arr) {
 
 function randomAmount(rng, env) {
   if (env === 'sandbox') {
-    // Round, obviously fake amounts.
+    // 둥글고 티 나는 테스트용 금액.
     return pick(rng, [1000, 1500, 2000, 5000, 10000, 25000, 50000]);
   }
-  // Production: realistic-ish, in minor units.
+  // Production: minor unit 기준의 비교적 현실적인 금액.
   const base = Math.floor(500 + rng() * 50000);
-  // Round to nearest 50 cents to feel like real prices.
+  // 실제 가격처럼 보이도록 50 단위에 맞춰 반올림.
   return Math.round(base / 50) * 50;
 }
 
@@ -110,13 +112,13 @@ function buildEvents(status, createdAt) {
     events.push(evt('captured', 4));
   } else if (status === 'pending') {
     events.push(evt('authorized', 2));
-    // No capture yet.
+    // 아직 capture 되지 않음.
   } else if (status === 'failed') {
     events.push(evt('authorization_failed', 3));
   } else if (status === 'refunded') {
     events.push(evt('authorized', 2));
     events.push(evt('captured', 4));
-    events.push(evt('refunded', 60 * 60 * 24)); // 1 day later
+    events.push(evt('refunded', 60 * 60 * 24)); // 하루 뒤
   }
   return events;
 }
@@ -169,12 +171,14 @@ function buildTransaction(rng, env, index, count) {
     events: buildEvents(status, createdAt),
     metadata:
       status === 'failed'
-        ? { order_id: `ord_${pad(index + 100, 5)}`, failure_reason: pick(rng, [
+        ? {
+          order_id: `ord_${pad(index + 100, 5)}`, failure_reason: pick(rng, [
             'card_declined',
             'insufficient_funds',
             'expired_card',
             'authentication_required',
-          ]) }
+          ])
+        }
         : { order_id: `ord_${pad(index + 100, 5)}` },
     created_at: createdAt,
   };
@@ -188,7 +192,7 @@ function buildList(env, count, seed) {
   for (let i = 0; i < count; i++) {
     items.push(buildTransaction(rng, env, i, count));
   }
-  // Ensure newest first.
+  // 최신 항목이 앞에 오도록 정렬.
   items.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   return items;
 }
