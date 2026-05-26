@@ -26,13 +26,15 @@ password: password123
 
 ```json
 Request:  { "email": "demo@hopae.com", "password": "password123" }
-Response: { "token": "mock.usr_demo.<ts>",
-            "user":  { "id": "...", "name": "...", "email": "..." } }
+Response: { "user":  { "id": "...", "name": "...", "email": "..." } }
 ```
+
+On success, the server sets an `httpOnly` auth cookie. Browser clients should
+send subsequent requests with `credentials: 'include'`.
 
 ### `GET /api/transactions?env=&limit=&cursor=`
 
-Headers: `Authorization: Bearer <token>`
+Authenticated via cookie (`credentials: 'include'` in the browser)
 
 Query params:
 - `env` — `sandbox` or `production` (required)
@@ -57,9 +59,7 @@ List rows return a **subset** of fields. `payment_method`, `events`, and
 
 ### `GET /api/transactions/:id`
 
-Headers:
-- `Authorization: Bearer <token>`
-
+Authenticated via cookie (`credentials: 'include'` in the browser)
 Query params:
 - `env` — `sandbox` or `production` (required)
 
