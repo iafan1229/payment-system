@@ -59,8 +59,17 @@ const PRODUCTION_CUSTOMERS = [
 const CARD_BRANDS = ['visa', 'mastercard', 'amex'];
 const SANDBOX_LAST4 = ['4242', '0005', '0341', '9995'];
 const PRODUCTION_LAST4 = ['4519', '2204', '8810', '0078', '6611', '3344', '9012'];
-
-const CURRENCIES_PRODUCTION = ['usd', 'eur', 'krw', 'jpy', 'gbp'];
+// 문제3: 사용되지 않는 상수
+// 해결: 사용되지 않던 통화 상수 대신 실제로 사용하는 가중치 정의를 한곳에 모음
+const DAYS_OF_HISTORY = 30;
+const FIXED_NOW_MS = Date.parse('2026-05-22T12:00:00.000Z');
+const PRODUCTION_CURRENCY_WEIGHTS = [
+  { value: 'usd', weight: 5 },
+  { value: 'eur', weight: 3 },
+  { value: 'krw', weight: 3 },
+  { value: 'jpy', weight: 1 },
+  { value: 'gbp', weight: 1 },
+];
 
 function pickWeighted(rng, items) {
   // items: [{ value, weight }]
@@ -112,7 +121,7 @@ function buildEvents(status, createdAt) {
   return events;
 }
 
-function buildTransaction(rng, env, index) {
+function buildTransaction(rng, env, index, count) {
   const customers = env === 'sandbox' ? SANDBOX_CUSTOMERS : PRODUCTION_CUSTOMERS;
   const last4Pool = env === 'sandbox' ? SANDBOX_LAST4 : PRODUCTION_LAST4;
 
@@ -127,18 +136,15 @@ function buildTransaction(rng, env, index) {
   const brand = pick(rng, CARD_BRANDS);
   const last4 = pick(rng, last4Pool);
   const amount = randomAmount(rng, env);
-  const currency =
-    env === 'sandbox' ? 'usd' : pickWeighted(rng, [
-      { value: 'usd', weight: 5 },
-      { value: 'eur', weight: 3 },
-      { value: 'krw', weight: 3 },
-      { value: 'jpy', weight: 1 },
-      { value: 'gbp', weight: 1 },
-    ]);
+  const currency = env === 'sandbox' ? 'usd' : pickWeighted(rng, PRODUCTION_CURRENCY_WEIGHTS);
 
-  // Spread transactions over the last 30 days, newest first.
-  const minutesAgo = Math.floor(index * (30 * 24 * 60) / 30 + rng() * 60);
-  const createdAt = new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
+  // 문제2: 최근 30일로 보이지만, index가 30보다 커지면 실제로는 30일을 넘길 수 있음.
+  // 해결: 거래 수가 30건을 넘어도 전체 생성 시각이 최근 30일 안에만 퍼지도록 계산
+  const bucketSizeMinutes = (DAYS_OF_HISTORY * 24 * 60) / Math.max(count, 1);
+  const minutesAgo = Math.floor(index * bucketSizeMinutes + rng() * bucketSizeMinutes);
+  // 문제1: 주석과 불일치 - 실제 생성 시각이 매 실행마다 바뀜(Date.now())
+  // 해결: 고정 기준 시각을 사용해 seed.js 결과가 매 실행마다 동일하게 유지되도록 함
+  const createdAt = new Date(FIXED_NOW_MS - minutesAgo * 60 * 1000).toISOString();
 
   const idPrefix = env === 'sandbox' ? 'txn_test' : 'txn_live';
   const id = makeId(idPrefix, index + 1);
@@ -180,7 +186,7 @@ function buildList(env, count, seed) {
   const rng = mulberry32(seed);
   const items = [];
   for (let i = 0; i < count; i++) {
-    items.push(buildTransaction(rng, env, i));
+    items.push(buildTransaction(rng, env, i, count));
   }
   // Ensure newest first.
   items.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
