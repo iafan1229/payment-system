@@ -52,6 +52,7 @@ const counters = {
 const DEFAULT_TICK_INTERVAL_MS = 6000;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
+const AUTH_COOKIE_NAME = 'mock_auth';
 
 const VALID_USER = {
   id: 'usr_demo',
@@ -68,14 +69,56 @@ function isValidToken(token) {
   return typeof token === 'string' && token.startsWith('mock.');
 }
 
+function buildAuthCookie(token) {
+  return `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax`;
+}
+
+function buildExpiredAuthCookie() {
+  return `${AUTH_COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax`;
+}
+
+function parseCookies(req) {
+  const header = req.get('Cookie') || '';
+
+  return header.split(';').reduce((cookies, part) => {
+    const trimmed = part.trim();
+    if (!trimmed) return cookies;
+
+    const separatorIndex = trimmed.indexOf('=');
+    if (separatorIndex === -1) return cookies;
+
+    const name = trimmed.slice(0, separatorIndex);
+    const value = trimmed.slice(separatorIndex + 1);
+    try {
+      cookies[name] = decodeURIComponent(value);
+    } catch {
+      cookies[name] = null;
+    }
+    return cookies;
+  }, {});
+}
+
+function getAuthTokenFromCookie(req) {
+  const cookies = parseCookies(req);
+  return cookies[AUTH_COOKIE_NAME] || null;
+}
+
 function requireAuth(req, res, next) {
-  const header = req.get('Authorization') || '';
-  if (!header.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+  const token = getAuthTokenFromCookie(req);
+  if (!token) {
+    return res.status(401).json({ error: 'Missing auth cookie' });
   }
-  if (!isValidToken(header.slice(7))) {
+
+  if (!isValidToken(token)) {
     return res.status(401).json({ error: 'Invalid token' });
   }
+
+  req.user = {
+    id: VALID_USER.id,
+    name: VALID_USER.name,
+    email: VALID_USER.email,
+  };
+
   return next();
 }
 
@@ -134,6 +177,20 @@ function getPendingResolutionEventType(succeeded) {
 
 server.use(jsonServer.bodyParser);
 server.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  const origin = req.get('Origin');
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    return res.sendStatus(204);
+  }
+  return next();
+});
+server.use((req, res, next) => {
   const ms = 120 + Math.floor(Math.random() * 220);
   setTimeout(next, ms);
 });
@@ -146,12 +203,21 @@ server.use(middlewares);
 server.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body || {};
   if (email === VALID_USER.email && password === VALID_USER.password) {
+    res.setHeader('Set-Cookie', buildAuthCookie(makeToken(VALID_USER.id)));
     return res.json({
-      token: makeToken(VALID_USER.id),
       user: { id: VALID_USER.id, name: VALID_USER.name, email: VALID_USER.email },
     });
   }
   return res.status(401).json({ error: 'Invalid email or password' });
+});
+
+server.get('/api/auth/me', requireAuth, (req, res) => {
+  return res.json({ user: req.user });
+});
+
+server.post('/api/auth/logout', (req, res) => {
+  res.setHeader('Set-Cookie', buildExpiredAuthCookie());
+  return res.json({ ok: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -348,12 +414,16 @@ const TICK_INTERVAL_MS = parseInt(process.env.TICK_INTERVAL_MS, 10) || 6000;
 let tickHandle = null;
 if (TICK_INTERVAL_MS > 0) {
   // 두 환경의 변화 시점이 완전히 겹치지 않도록 약간 어긋나게 함.
-  setTimeout(() => tick('sandbox'), 2000);
-  setTimeout(() => tick('production'), 4000);
+  const sandboxStartTimeout = setTimeout(() => tick('sandbox'), 2000);
+  const productionStartTimeout = setTimeout(() => tick('production'), 4000);
   tickHandle = setInterval(() => {
     tick('sandbox');
-    setTimeout(() => tick('production'), TICK_INTERVAL_MS / 2);
+    const productionOffsetTimeout = setTimeout(() => tick('production'), TICK_INTERVAL_MS / 2);
+    productionOffsetTimeout.unref();
   }, TICK_INTERVAL_MS);
+  sandboxStartTimeout.unref();
+  productionStartTimeout.unref();
+  tickHandle.unref();
 }
 
 // ---------------------------------------------------------------------------
