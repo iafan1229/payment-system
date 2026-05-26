@@ -59,7 +59,9 @@ List rows return a **subset** of fields. `payment_method`, `events`, and
 
 Headers:
 - `Authorization: Bearer <token>`
-- `X-Environment: sandbox | production`  ← yes, env is in a **header** here, not a query param
+
+Query params:
+- `env` — `sandbox` or `production` (required)
 
 Returns the full transaction object.
 
@@ -84,11 +86,10 @@ minor unit, so `12000` means ₩12,000 / ¥12,000. Currency codes are lowercase.
 ## A note on the API shape
 
 This API is a **starting point**, not a finished contract. Some endpoints
-make choices that are inconsistent with each other, or that a real
-production API would do differently. That's intentional. If you'd design
-any of it differently — or if you want to add an endpoint that this one is
-missing — change it in your fork and write up your reasoning in your
-project README.
+may still leave room for improvement, or differ from what a real production
+API would do. If you'd design any of it differently — or if you want to add
+an endpoint that this one is missing — change it in your fork and write up
+your reasoning in your project README.
 
 ## Regenerating data
 
