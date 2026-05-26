@@ -5,7 +5,7 @@
  * 구축했습니다. 아래 라우트들은 모두 수동으로 구현되어 있는데, 이유는:
  *   - login은 자동 생성할 수 없고
  *   - cursor 기반 페이지네이션도 자동 생성할 수 없고
- *   - 엔드포인트마다 환경 선택 방식이 다르기 때문입니다(의도적).
+ *   - env 검증, 커서 처리 같은 규칙을 명시적으로 제어하고 싶기 때문입니다.
  *
  * 서버는 메모리 내 데이터를 주기적으로 변경합니다. 몇 초마다 새
  * 트랜잭션을 추가하거나 `pending` 트랜잭션을 `succeeded` / `failed`
@@ -92,14 +92,6 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-//헬퍼함수 추가1: tickIntervalMs 파싱 로직을 별도 함수로 분리
-function parseTickIntervalMs(rawValue) {
-  const parsedValue = parseInt(rawValue, 10);
-  if (Number.isNaN(parsedValue) || parsedValue < 0) {
-    return DEFAULT_TICK_INTERVAL_MS;
-  }
-  return parsedValue;
-}
 
 //헬퍼함수 추가2: limit 파싱 로직을 별도 함수로 분리 (음수 제거)
 function parseLimitParam(rawValue) {
@@ -113,6 +105,25 @@ function parseLimitParam(rawValue) {
   }
 
   return { ok: true, value: Math.min(parsedValue, MAX_LIMIT) };
+}
+
+// 문제: 같은 env 개념을 목록은 query, 상세는 header로 받으면 프론트 구현 규칙이
+//       불필요하게 둘로 나뉘어 실수 가능성이 커짐.
+// 해결: 목록/상세 모두 `env` query parameter로 통일해 같은 방식으로 해석함.
+function parseEnvQueryParam(rawValue) {
+  const env = envKey(rawValue);
+  if (!env) {
+    return {
+      ok: false,
+      error: '`env` query parameter is required and must be "sandbox" or "production"',
+    };
+  }
+
+  return { ok: true, value: env };
+}
+
+function getPendingResolutionEventType(succeeded) {
+  return succeeded ? 'captured' : 'capture_failed';
 }
 
 
@@ -150,12 +161,13 @@ server.post('/api/auth/login', (req, res) => {
 // ---------------------------------------------------------------------------
 
 server.get('/api/transactions', requireAuth, (req, res) => {
-  const env = envKey(req.query.env);
-  if (!env) {
+  const envResult = parseEnvQueryParam(req.query.env);
+  if (!envResult.ok) {
     return res.status(400).json({
-      error: '`env` query parameter is required and must be "sandbox" or "production"',
+      error: envResult.error,
     });
   }
+  const env = envResult.value;
 
   // 문제: 음수나 0 같은 잘못된 limit 값이 들어오면 응답 모양이 깨질 수 있음.
   // 해결: 서버에서 limit를 직접 검증하고, 잘못된 값은 400으로 거절함.
@@ -193,16 +205,20 @@ server.get('/api/transactions', requireAuth, (req, res) => {
 
 // ---------------------------------------------------------------------------
 // GET /api/transactions/:id
-//   환경은 X-Environment HEADER로 받음 (목록과 의도적으로 다름)
+//   환경도 목록과 동일하게 `env` QUERY PARAM으로 받음
 // ---------------------------------------------------------------------------
 
 server.get('/api/transactions/:id', requireAuth, (req, res) => {
-  const env = envKey(req.get('X-Environment'));
-  if (!env) {
+  // 문제: 상세만 X-Environment header를 쓰면 env 전달 방식이 API마다 달라져
+  //       프론트에서 같은 상태를 서로 다른 위치에 반복해서 실어 보내야 함.
+  // 해결: 상세도 `?env=`를 사용하게 바꿔 목록 API와 규칙을 맞춤.
+  const envResult = parseEnvQueryParam(req.query.env);
+  if (!envResult.ok) {
     return res.status(400).json({
-      error: '`X-Environment` header is required and must be "sandbox" or "production"',
+      error: envResult.error,
     });
   }
+  const env = envResult.value;
   const tx = state[env].find((t) => t.id === req.params.id);
   if (!tx) return res.status(404).json({ error: 'Transaction not found in this environment' });
   return res.json(tx);
@@ -303,7 +319,7 @@ function resolveOnePending(env) {
   //       created -> authorized -> authorization_failed 흐름이 되어 의미가 어색함.
   // 해결: 승인 이후 확정 단계 실패를 뜻하는 capture_failed 이벤트로 구분함.
   tx.events.push({
-    type: succeeded ? 'captured' : 'capture_failed',
+    type: getPendingResolutionEventType(succeeded),
     at: now,
   });
   if (!succeeded) {
@@ -327,10 +343,8 @@ function tick(env) {
   // 약 10%는 아무 일도 하지 않음.
 }
 
-// 문제: `parseInt(...) || 6000` 방식은 TICK_INTERVAL_MS=0도 기본값으로 덮어써서
-//       README에 적힌 freeze 모드가 실제로는 동작하지 않음.
-// 해결: 0도 정상값으로 인정하고, 음수/NaN일 때만 기본값을 사용함.
-const TICK_INTERVAL_MS = parseTickIntervalMs(process.env.TICK_INTERVAL_MS);
+
+const TICK_INTERVAL_MS = parseInt(process.env.TICK_INTERVAL_MS, 10) || 6000;
 let tickHandle = null;
 if (TICK_INTERVAL_MS > 0) {
   // 두 환경의 변화 시점이 완전히 겹치지 않도록 약간 어긋나게 함.
@@ -363,7 +377,7 @@ function startServer() {
     console.log('');
     console.log('  POST /api/auth/login');
     console.log('  GET  /api/transactions?env=sandbox|production&limit=&cursor=');
-    console.log('  GET  /api/transactions/:id            (header X-Environment: sandbox|production)');
+    console.log('  GET  /api/transactions/:id?env=sandbox|production');
     console.log('');
     console.log(`  Test credentials: ${VALID_USER.email} / ${VALID_USER.password}`);
     console.log(`  Background data changes: every ${TICK_INTERVAL_MS} ms per env (default: ${DEFAULT_TICK_INTERVAL_MS}, set TICK_INTERVAL_MS=0 to freeze)`);
@@ -383,8 +397,8 @@ if (require.main === module) {
 module.exports = {
   DEFAULT_TICK_INTERVAL_MS,
   getPendingResolutionEventType,
+  parseEnvQueryParam,
   parseLimitParam,
-  parseTickIntervalMs,
   server,
   shutdownServer,
   startServer,
