@@ -10,6 +10,15 @@
  * 이를 통해 후보자가 환경별 시각적 구분을 넣을 여지를 남깁니다.
  */
 
+
+/*
+
+현재 seed.js로 생성한 db.json
+sandbox: 2026-04-22 ~ 2026-05-22
+production: 2026-04-22 ~ 2026-05-22
+
+*/
+
 const fs = require('fs');
 const path = require('path');
 
@@ -140,8 +149,9 @@ function buildTransaction(rng, env, index, count) {
   const amount = randomAmount(rng, env);
   const currency = env === 'sandbox' ? 'usd' : pickWeighted(rng, PRODUCTION_CURRENCY_WEIGHTS);
 
-  // 문제2: 최근 30일로 보이지만, index가 30보다 커지면 실제로는 30일을 넘길 수 있음.
-  // 해결: 거래 수가 30건을 넘어도 전체 생성 시각이 최근 30일 안에만 퍼지도록 계산
+  // 문제2: Spread transactions over the last 30 days, newest first.
+  // 문제2 설명: 최근 30일로 보이지만, index가 30보다 커지면 실제로는 30일을 넘길 수 있음.
+  // 해결: 거래 수가 30건을 넘어도 전체 생성 시각이 최근 30일 안에만 퍼지도록 계산(5월 22일 ~ 6월 22일)
   const bucketSizeMinutes = (DAYS_OF_HISTORY * 24 * 60) / Math.max(count, 1);
   const minutesAgo = Math.floor(index * bucketSizeMinutes + rng() * bucketSizeMinutes);
   // 문제1: 주석과 불일치 - 실제 생성 시각이 매 실행마다 바뀜(Date.now())
