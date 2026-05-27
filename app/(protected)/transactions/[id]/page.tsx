@@ -156,9 +156,7 @@ export default function TransactionDetailPage() {
             <p className="mb-3 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-amber-700">
               Transaction Detail
             </p>
-            <h1 className="max-w-5xl text-[clamp(2.5rem,4.8vw,4.6rem)] font-semibold tracking-[-0.05em] text-slate-950">
-              읽고 있는 본문은 지키면서, 핵심 상태 변화는 바로 따라갑니다.
-            </h1>
+
             <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
               상세 화면은 5초 주기로 최신 상태를 따라가되, 본문 맥락을 깨는 정보는 사용자가 적용할 때까지
               보류합니다.

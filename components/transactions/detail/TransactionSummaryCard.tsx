@@ -42,7 +42,7 @@ export function TransactionSummaryCard({ env, detail, highlighted }: Transaction
   return (
     <section
       className={[
-        'xl:col-span-6 rounded-[2rem] border bg-white/82 p-6 shadow-[0_24px_64px_rgba(15,23,42,0.08)] backdrop-blur transition-colors duration-500',
+        'xl:col-span-6 rounded-[2rem] border bg-/82 p-6 shadow-[0_24px_64px_rgba(15,23,42,0.08)] backdrop-blur transition-colors duration-500',
         highlighted && env === 'sandbox' && 'border-amber-300 bg-amber-50/90',
         highlighted && env === 'production' && 'border-cyan-300 bg-cyan-50/80',
         !highlighted && 'border-black/10'
@@ -50,16 +50,11 @@ export function TransactionSummaryCard({ env, detail, highlighted }: Transaction
         .filter(Boolean)
         .join(' ')}
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-2xl">
-          <p className="mb-3 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
-            Transaction
-          </p>
-          <h2 className="text-[1.8rem] font-semibold tracking-[-0.04em] text-slate-950">{detail.id}</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            상태와 핵심 식별 정보는 즉시 반영되어 현재 흐름을 늦추지 않습니다.
-          </p>
-        </div>
+      {/* 상단: 라벨 + 상태 배지 */}
+      <div className="flex items-center justify-between gap-4">
+        <p className="font-mono text-[18px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+          Transaction
+        </p>
 
         <span
           className={[
@@ -71,26 +66,18 @@ export function TransactionSummaryCard({ env, detail, highlighted }: Transaction
         </span>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div>
-          <span className="block text-xs font-medium uppercase tracking-[0.18em] text-slate-500">금액</span>
-          <strong className="mt-2 block text-xl font-semibold text-slate-950">
-            {formatAmount(detail.amount, detail.currency)}
-          </strong>
-        </div>
-        <div>
-          <span className="block text-xs font-medium uppercase tracking-[0.18em] text-slate-500">통화</span>
-          <strong className="mt-2 block text-xl font-semibold text-slate-950">{detail.currency.toUpperCase()}</strong>
-        </div>
-        <div>
-          <span className="block text-xs font-medium uppercase tracking-[0.18em] text-slate-500">고객</span>
-          <strong className="mt-2 block text-xl font-semibold text-slate-950">{detail.customer.name}</strong>
-          <p className="mt-1 text-sm text-slate-500">{detail.customer.email}</p>
-        </div>
-        <div>
-          <span className="block text-xs font-medium uppercase tracking-[0.18em] text-slate-500">생성 시각</span>
-          <strong className="mt-2 block text-base font-semibold text-slate-950">{formatDate(detail.created_at)}</strong>
-        </div>
+      {/* 금액 + 통화: 메인 히어로 */}
+      <div className="mt-4 flex items-end gap-3">
+        <h2 className="text-5xl font-bold tracking-tight text-slate-950 leading-none">
+          {formatAmount(detail.amount, detail.currency)}
+        </h2>
+        <span className="mb-1 text-xl font-semibold text-slate-400">{detail.currency.toUpperCase()}</span>
+      </div>
+
+      {/* 하단: ID + 생성 시각 */}
+      <div className="mt-5 flex flex-col gap-1 border-t border-black/6 pt-4">
+        <span className="font-mono text-xs text-slate-400 tracking-tight">{detail.id}</span>
+        <span className="text-xs text-slate-400">{formatDate(detail.created_at)}</span>
       </div>
     </section>
   );

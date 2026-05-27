@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { EnvironmentContextStrip } from '@/components/transactions/EnvironmentContextStrip';
 import { EnvSwitcher } from '@/components/transactions/EnvSwitcher';
+import { TransactionsHeader } from '@/components/transactions/TransactionsHeader';
 import { NewTransactionsBanner } from '@/components/transactions/NewTransactionsBanner';
 import { TransactionsLiveBar } from '@/components/transactions/TransactionsLiveBar';
 import { TransactionsTable } from '@/components/transactions/TransactionsTable';
@@ -185,19 +186,7 @@ export default function TransactionsPage() {
 
       <section className="mx-auto w-full max-w-7xl">
         <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-5xl">
-            <p className="mb-3 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-amber-700">
-              Hopae Payments
-            </p>
-            <h1 className="max-w-5xl text-[clamp(2.8rem,5vw,5rem)] font-semibold tracking-[-0.05em] text-slate-950">
-              거래 흐름을 읽는 동안, 새 신호는 놓치지 않게 유지합니다.
-            </h1>
-            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-              {user
-                ? `${user.name} 계정으로 로그인됨. 환경 전환, 새 거래 유입, 상태 변화를 한 화면에서 연속적으로 읽을 수 있게 정리했습니다.`
-                : '세션을 연결하는 동안에도 현재 환경과 라이브 갱신 흐름을 읽을 수 있게 유지합니다.'}
-            </p>
-          </div>
+          <TransactionsHeader userName={user ? user.name : null} />
 
           <EnvSwitcher
             env={env}

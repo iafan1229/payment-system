@@ -9,6 +9,7 @@ export type TransactionRow = {
   currency: string;
   status: TransactionStatus;
   customer: {
+    id: string;
     name: string;
     email: string;
   };

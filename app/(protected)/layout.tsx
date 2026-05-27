@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { logout } from '@/lib/auth-api';
 import { useAuthStore } from '@/stores/auth-store';
+import { Header } from '@/components/Header';
 
 type ProtectedLayoutProps = {
   children: ReactNode;
@@ -48,21 +49,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
 
   return (
     <div className="protected-shell">
-      <header className="topbar">
-        <a href="/transactions" className="brand-mark">
-          <span className="brand-diamond" />
-          <strong>Hopae Payments</strong>
-        </a>
-        <div className="topbar-actions">
-          <div className="user-chip">
-            <span>{user.name}</span>
-            <small>{user.email}</small>
-          </div>
-          <button className="secondary-button" type="button" onClick={handleLogout} disabled={isLoggingOut}>
-            {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
-          </button>
-        </div>
-      </header>
+      <Header user={user} onLogout={handleLogout} isLoggingOut={isLoggingOut} />
       {children}
     </div>
   );

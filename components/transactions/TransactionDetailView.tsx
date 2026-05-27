@@ -4,6 +4,7 @@ import { TransactionMetadataCard } from '@/components/transactions/detail/Transa
 import { TransactionPaymentMethodCard } from '@/components/transactions/detail/TransactionPaymentMethodCard';
 import { TransactionSummaryCard } from '@/components/transactions/detail/TransactionSummaryCard';
 import { TransactionTimelineCard } from '@/components/transactions/detail/TransactionTimelineCard';
+import { CustomerCard } from '@/components/transactions/detail/CustomerCard';
 
 type TransactionDetailViewProps = {
   env: Env;
@@ -25,6 +26,7 @@ export function TransactionDetailView({
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 xl:grid-flow-dense">
       <TransactionSummaryCard env={env} detail={detail} highlighted={highlightedCards.includes('summary')} />
+      <CustomerCard env={env} customer={detail.customer} highlighted={highlightedCards.includes('summary')} />
       <TransactionTimelineCard env={env} events={detail.events} highlightedEventKeys={highlightedEventKeys} />
       <TransactionPaymentMethodCard
         env={env}

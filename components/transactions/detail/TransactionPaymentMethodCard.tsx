@@ -17,7 +17,7 @@ export function TransactionPaymentMethodCard({
   return (
     <section
       className={[
-        'xl:col-span-5 rounded-[2rem] border bg-white/82 p-6 shadow-[0_24px_64px_rgba(15,23,42,0.08)] backdrop-blur transition-colors duration-500',
+        'xl:col-span-6 rounded-[2rem] border bg-white/82 p-6 shadow-[0_24px_64px_rgba(15,23,42,0.08)] backdrop-blur transition-colors duration-500',
         highlighted && env === 'sandbox' && 'border-amber-300 bg-amber-50/80',
         highlighted && env === 'production' && 'border-cyan-300 bg-cyan-50/70',
         !highlighted && 'border-black/10'
@@ -26,9 +26,10 @@ export function TransactionPaymentMethodCard({
         .join(' ')}
     >
       <div className="mb-5 flex flex-col gap-2">
-        <p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+        <p className="font-mono text-[18px] font-semibold uppercase tracking-[0.24em] text-slate-500">
           Payment Method
         </p>
+        <div style={{ background: 'lightgray', marginTop: 10, width: '100%', height: '1px' }} />
         <h2 className="text-[1.45rem] font-semibold tracking-[-0.03em] text-slate-950">
           {paymentMethod.brand} •••• {paymentMethod.last4}
         </h2>
@@ -39,7 +40,7 @@ export function TransactionPaymentMethodCard({
         ) : null}
       </div>
 
-      <div className="grid gap-4 text-sm text-slate-700">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-slate-700">
         <div>
           <span className="block text-xs font-medium uppercase tracking-[0.18em] text-slate-500">브랜드</span>
           <strong className="mt-2 block text-base font-semibold text-slate-950">{paymentMethod.brand}</strong>
