@@ -1,7 +1,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getMe } from '@/lib/auth/auth-api';
-import { useAuthBootstrap } from '@/hooks/use-auth-bootstrap';
+import { useAuthBootstrap } from '@/hooks/useAuthBootstrap';
 import { HttpError } from '@/lib/auth/http';
 import { useAuthStore, type AuthUser } from '@/stores/auth-store';
 

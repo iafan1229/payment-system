@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { useAuthBootstrap } from '@/hooks/use-auth-bootstrap';
+import { useAuthBootstrap } from '@/hooks/useAuthBootstrap';
 
 type AppProvidersProps = {
   children: ReactNode;

@@ -1,3 +1,5 @@
+//앱 시작 시 getMe()로 인증 상태를 부트스트랩
+
 'use client';
 
 import { useEffect } from 'react';

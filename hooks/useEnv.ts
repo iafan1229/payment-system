@@ -1,3 +1,5 @@
+//URL, localStorage, router를 묶어서 env 상태를 관리
+
 'use client';
 
 import { useEffect, useRef } from 'react';

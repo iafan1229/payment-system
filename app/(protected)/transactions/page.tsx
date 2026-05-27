@@ -10,7 +10,7 @@ import { NewTransactionsBanner } from '@/components/transactions/NewTransactions
 import { TransactionsLiveBar } from '@/components/transactions/TransactionsLiveBar';
 import { TransactionsTable } from '@/components/transactions/TransactionsTable';
 import { useAuthStore } from '@/stores/auth-store';
-import { useEnv } from '@/hooks/use-env';
+import { useEnv } from '@/hooks/useEnv';
 import type { Env } from '@/lib/auth/env';
 import { getTransactions } from '@/lib/transaction/transactionsApi';
 import { buildTransactionsFeed } from '@/lib/transaction/transactionsFeed';

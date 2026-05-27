@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { TransactionDetailUpdateBar } from '@/components/transactions/TransactionDetailUpdateBar';
 import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
-import { useEnv } from '@/hooks/use-env';
+import { useEnv } from '@/hooks/useEnv';
 import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
 import { getTransactionDetail } from '@/lib/transaction/transactionsApi';
 import { diffTransactionDetail } from '@/lib/transaction/transactionDetailLive';
