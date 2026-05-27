@@ -2,10 +2,13 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { EnvSwitcher } from '@/components/transactions/EnvSwitcher';
 import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
 import { useEnv } from '@/hooks/use-env';
 import { getTransactionDetail } from '@/lib/transactions-api';
+
+function formatEnvLabel(env: 'sandbox' | 'production') {
+  return env === 'sandbox' ? 'Sandbox' : 'Production';
+}
 
 export default function TransactionDetailPage() {
   const router = useRouter();
@@ -30,7 +33,10 @@ export default function TransactionDetailPage() {
             상세 화면에서는 `pending` 상태일 때만 주기적으로 다시 조회해서 흐름을 따라갑니다.
           </p>
         </div>
-        <EnvSwitcher env={env} onChange={(nextEnv) => router.push(`/transactions?env=${nextEnv}`)} />
+        <div className="env-context">
+          <span className={`env-chip env-chip-${env}`}>{formatEnvLabel(env)}</span>
+          <p>현재 보고 있는 거래가 속한 환경</p>
+        </div>
       </header>
 
       <div className="detail-actions">

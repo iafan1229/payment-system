@@ -270,6 +270,41 @@ button {
   color: #fff8ef;
 }
 
+.env-context {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.env-context p {
+  margin: 0;
+  color: var(--muted);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+}
+
+.env-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.env-chip-sandbox {
+  background: #e8b73c;
+  color: #3a2a00;
+}
+
+.env-chip-production {
+  background: var(--foreground);
+  color: #fff8ef;
+}
+
 .table-card {
   overflow: hidden;
 }
