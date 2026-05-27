@@ -404,6 +404,20 @@ button {
   font-size: 13px;
 }
 
+.inline-refresh-notice {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 16px;
+  border: 1px solid rgba(79, 122, 82, 0.22);
+  border-radius: 999px;
+  background: rgba(234, 241, 234, 0.92);
+  color: #335c38;
+  padding: 10px 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .detail-grid {
   display: grid;
   gap: 16px;

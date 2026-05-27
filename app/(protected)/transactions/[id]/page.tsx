@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
@@ -15,6 +16,8 @@ export default function TransactionDetailPage() {
   const params = useParams<{ id: string }>();
   const { env } = useEnv();
   const id = params.id;
+  const latestUpdateRef = useRef<number | null>(null);
+  const [showRefreshNotice, setShowRefreshNotice] = useState(false);
   const query = useQuery({
     queryKey: ['transaction', env, id],
     queryFn: () => getTransactionDetail(env, id),
@@ -22,6 +25,33 @@ export default function TransactionDetailPage() {
       currentQuery.state.data?.status === 'pending' ? 5000 : false,
     refetchOnWindowFocus: false
   });
+
+  useEffect(() => {
+    if (!query.data) {
+      return;
+    }
+
+    // 초기 진입 시점은 갱신 알림을 띄우지 않고 기준 시각만 저장함.
+    if (latestUpdateRef.current === null) {
+      latestUpdateRef.current = query.dataUpdatedAt;
+      return;
+    }
+
+    if (query.dataUpdatedAt === latestUpdateRef.current) {
+      return;
+    }
+
+    latestUpdateRef.current = query.dataUpdatedAt;
+    setShowRefreshNotice(true);
+
+    const timeoutId = window.setTimeout(() => {
+      setShowRefreshNotice(false);
+    }, 2500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [query.data, query.dataUpdatedAt]);
 
   return (
     <main className="page-shell">
@@ -38,6 +68,12 @@ export default function TransactionDetailPage() {
           <p>현재 보고 있는 거래가 속한 환경</p>
         </div>
       </header>
+
+      {showRefreshNotice ? (
+        <div className="inline-refresh-notice" role="status" aria-live="polite">
+          방금 갱신됨
+        </div>
+      ) : null}
 
       <div className="detail-actions">
         <button className="secondary-button" type="button" onClick={() => router.push(`/transactions?env=${env}`)}>
