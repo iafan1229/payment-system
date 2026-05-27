@@ -1,6 +1,3 @@
 node_modules
 .next
-coverage
-dist
-vitest.workspace.tsbuildinfo
-tsconfig.tsbuildinfo
+*.tsbuildinfo
