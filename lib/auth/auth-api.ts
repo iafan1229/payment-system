@@ -1,4 +1,4 @@
-import { http } from '@/lib/http';
+import { http } from '@/lib/auth/http';
 import type { AuthUser } from '@/stores/auth-store';
 
 type LoginInput = {

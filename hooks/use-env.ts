@@ -10,7 +10,7 @@ import {
   normalizeEnv,
   resolveInitialEnv,
   type Env
-} from '@/lib/env';
+} from '@/lib/auth/env';
 
 export function useEnv() {
   const router = useRouter();

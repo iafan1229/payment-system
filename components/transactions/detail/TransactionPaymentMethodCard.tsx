@@ -1,5 +1,5 @@
-import type { Env } from '@/lib/env';
-import type { TransactionDetail } from '@/lib/transactions-api';
+import type { Env } from '@/lib/auth/env';
+import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
 
 type TransactionPaymentMethodCardProps = {
   env: Env;

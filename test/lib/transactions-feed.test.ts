@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildTransactionsFeed } from '@/lib/transactions-feed';
-import type { TransactionsPage } from '@/lib/transactions-api';
+import { buildTransactionsFeed } from '@/lib/transaction/transactionsFeed';
+import type { TransactionsPage } from '@/lib/transaction/transactionsApi';
 
 function createPage(input: Partial<TransactionsPage> & Pick<TransactionsPage, 'data'>): TransactionsPage {
   return {
@@ -19,7 +19,7 @@ describe('buildTransactionsFeed', () => {
           amount: 1000,
           currency: 'usd',
           status: 'pending',
-          customer: { name: 'A', email: 'a@example.com' },
+          customer: { id: 'cus_1', name: 'A', email: 'a@example.com' },
           created_at: '2026-05-27T00:00:00.000Z'
         }
       ],
@@ -33,7 +33,7 @@ describe('buildTransactionsFeed', () => {
           amount: 2000,
           currency: 'usd',
           status: 'succeeded',
-          customer: { name: 'B', email: 'b@example.com' },
+          customer: { id: 'cus_2', name: 'B', email: 'b@example.com' },
           created_at: '2026-05-26T00:00:00.000Z'
         }
       ],

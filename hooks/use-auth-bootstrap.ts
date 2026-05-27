@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { getMe } from '@/lib/auth-api';
-import { HttpError } from '@/lib/http';
+import { getMe } from '@/lib/auth/auth-api';
+import { HttpError } from '@/lib/auth/http';
 import { useAuthStore } from '@/stores/auth-store';
 
 export function useAuthBootstrap() {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { TransactionDetail } from '@/lib/transactions-api';
-import { diffTransactionDetail } from '@/lib/transaction-detail-live';
+import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
+import { diffTransactionDetail } from '@/lib/transaction/transactionDetailLive';
 
 function createDetail(overrides: Partial<TransactionDetail> & Pick<TransactionDetail, 'id'>): TransactionDetail {
   return {
@@ -9,6 +9,7 @@ function createDetail(overrides: Partial<TransactionDetail> & Pick<TransactionDe
     currency: overrides.currency ?? 'usd',
     status: overrides.status ?? 'pending',
     customer: overrides.customer ?? {
+      id: 'cus_demo',
       name: 'Demo User',
       email: 'demo@example.com'
     },

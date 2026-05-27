@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { http, HttpError } from '@/lib/http';
+import { http, HttpError } from '@/lib/auth/http';
 
 describe('http', () => {
   const fetchMock = vi.fn();

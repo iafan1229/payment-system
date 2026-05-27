@@ -1,5 +1,5 @@
-import type { Env } from '@/lib/env';
-import type { TransactionRow } from '@/lib/transactions-api';
+import type { Env } from '@/lib/auth/env';
+import type { TransactionRow } from '@/lib/transaction/transactionsApi';
 
 type TransactionsTableProps = {
   env: Env;
@@ -63,7 +63,7 @@ export function TransactionsTable({ env, rows, freshRowIds, changedRowIds, onSel
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse font-sans">
           <thead className="bg-black/[0.03]">
-          <tr>
+            <tr>
               <th className="px-5 py-4 text-left text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
                 ID
               </th>
@@ -82,9 +82,9 @@ export function TransactionsTable({ env, rows, freshRowIds, changedRowIds, onSel
               <th className="px-5 py-4 text-left text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
                 생성 시각
               </th>
-          </tr>
-        </thead>
-        <tbody>
+            </tr>
+          </thead>
+          <tbody>
             {rows.map((row) => {
               const fresh = freshRowIdSet.has(row.id);
               const changed = changedRowIdSet.has(row.id);
@@ -115,7 +115,7 @@ export function TransactionsTable({ env, rows, freshRowIds, changedRowIds, onSel
                       className={[
                         'relative pl-4 font-mono text-[0.82rem]',
                         (fresh || changed) &&
-                          'before:absolute before:bottom-0 before:left-0 before:top-0 before:w-0.5 before:rounded-full',
+                        'before:absolute before:bottom-0 before:left-0 before:top-0 before:w-0.5 before:rounded-full',
                         fresh && env === 'sandbox' && 'before:bg-amber-600',
                         fresh && env === 'production' && 'before:bg-cyan-600',
                         !fresh && changed && 'before:bg-slate-500'
@@ -140,9 +140,9 @@ export function TransactionsTable({ env, rows, freshRowIds, changedRowIds, onSel
                         tone === 'failed' && 'bg-rose-50 text-rose-700',
                         tone === 'refunded' && 'bg-sky-50 text-sky-700',
                         changed &&
-                          (env === 'sandbox'
-                            ? 'ring-amber-300 ring-offset-amber-50'
-                            : 'ring-cyan-200 ring-offset-cyan-50')
+                        (env === 'sandbox'
+                          ? 'ring-amber-300 ring-offset-amber-50'
+                          : 'ring-cyan-200 ring-offset-cyan-50')
                       ]
                         .filter(Boolean)
                         .join(' ')}
@@ -160,7 +160,7 @@ export function TransactionsTable({ env, rows, freshRowIds, changedRowIds, onSel
                 </tr>
               );
             })}
-        </tbody>
+          </tbody>
         </table>
       </div>
     </div>

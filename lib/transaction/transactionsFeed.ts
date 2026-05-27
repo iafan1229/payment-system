@@ -1,4 +1,5 @@
-import type { TransactionRow, TransactionsPage } from '@/lib/transactions-api';
+//여러 페이지로 받아온 거래 데이터를 한 줄 목록으로 합쳐주는 파일
+import type { TransactionRow, TransactionsPage } from '@/lib/transaction/transactionsApi';
 
 type TransactionsFeed = {
   rows: TransactionRow[];

@@ -11,10 +11,10 @@ import { TransactionsLiveBar } from '@/components/transactions/TransactionsLiveB
 import { TransactionsTable } from '@/components/transactions/TransactionsTable';
 import { useAuthStore } from '@/stores/auth-store';
 import { useEnv } from '@/hooks/use-env';
-import type { Env } from '@/lib/env';
-import { getTransactions } from '@/lib/transactions-api';
-import { buildTransactionsFeed } from '@/lib/transactions-feed';
-import { diffTransactions, mergeQueuedRows, preserveVisibleRows } from '@/lib/transactions-live';
+import type { Env } from '@/lib/auth/env';
+import { getTransactions } from '@/lib/transaction/transactionsApi';
+import { buildTransactionsFeed } from '@/lib/transaction/transactionsFeed';
+import { diffTransactions, mergeQueuedRows, preserveVisibleRows } from '@/lib/transaction/transactionsLive';
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -81,7 +81,7 @@ export default function TransactionsPage() {
       return;
     }
 
-    if (diff.newRows.length === 0 && diff.changedRowIds.length === 0) {
+    if (diff.newRows.length === 0 && diff.appendedRows.length === 0 && diff.changedRowIds.length === 0) {
       if (queuedNewRows.length > 0) {
         setDisplayRows((currentRows) => preserveVisibleRows(currentRows, diff));
       } else {
@@ -98,7 +98,15 @@ export default function TransactionsPage() {
       setQueuedNewRows([]);
       setFreshRowIds(diff.newRows.map((row) => row.id));
     } else {
-      setDisplayRows((currentRows) => preserveVisibleRows(currentRows, diff));
+      setDisplayRows((currentRows) => {
+        const visibleRows = preserveVisibleRows(currentRows, diff);
+
+        if (diff.appendedRows.length === 0) {
+          return visibleRows;
+        }
+
+        return [...visibleRows, ...diff.appendedRows];
+      });
       setQueuedNewRows((currentRows) => mergeQueuedRows(currentRows, diff.newRows));
     }
 

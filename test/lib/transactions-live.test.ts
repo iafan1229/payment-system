@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { TransactionRow } from '@/lib/transactions-api';
-import { diffTransactions, mergeQueuedRows, preserveVisibleRows } from '@/lib/transactions-live';
+import type { TransactionRow } from '@/lib/transaction/transactionsApi';
+import { diffTransactions, mergeQueuedRows, preserveVisibleRows } from '@/lib/transaction/transactionsLive';
 
 function createRow(overrides: Partial<TransactionRow> & Pick<TransactionRow, 'id'>): TransactionRow {
   return {
@@ -9,6 +9,7 @@ function createRow(overrides: Partial<TransactionRow> & Pick<TransactionRow, 'id
     currency: overrides.currency ?? 'usd',
     status: overrides.status ?? 'pending',
     customer: overrides.customer ?? {
+      id: 'cus_demo',
       name: 'Demo User',
       email: 'demo@example.com'
     },
@@ -30,7 +31,25 @@ describe('transactions live helpers', () => {
 
     expect(diffTransactions(previousRows, nextRows)).toMatchObject({
       newRows: [nextRows[0]],
+      appendedRows: [],
       changedRowIds: ['txn_1']
+    });
+  });
+
+  it('separates paginated older rows from live rows added above the list', () => {
+    const previousRows = [createRow({ id: 'txn_1' }), createRow({ id: 'txn_2' })];
+    const nextRows = [
+      createRow({ id: 'txn_0' }),
+      createRow({ id: 'txn_1' }),
+      createRow({ id: 'txn_2' }),
+      createRow({ id: 'txn_3' }),
+      createRow({ id: 'txn_4' })
+    ];
+
+    expect(diffTransactions(previousRows, nextRows)).toMatchObject({
+      newRows: [nextRows[0]],
+      appendedRows: [nextRows[3], nextRows[4]],
+      changedRowIds: []
     });
   });
 

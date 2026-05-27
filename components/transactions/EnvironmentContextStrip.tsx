@@ -1,4 +1,4 @@
-import type { Env } from '@/lib/env';
+import type { Env } from '@/lib/auth/env';
 
 type EnvironmentContextStripProps = {
   env: Env;

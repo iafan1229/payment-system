@@ -1,5 +1,5 @@
-import type { Env } from '@/lib/env';
-import type { TransactionDetail } from '@/lib/transactions-api';
+import type { Env } from '@/lib/auth/env';
+import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
 import { TransactionMetadataCard } from '@/components/transactions/detail/TransactionMetadataCard';
 import { TransactionPaymentMethodCard } from '@/components/transactions/detail/TransactionPaymentMethodCard';
 import { TransactionSummaryCard } from '@/components/transactions/detail/TransactionSummaryCard';

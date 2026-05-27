@@ -6,9 +6,9 @@ import { useQuery } from '@tanstack/react-query';
 import { TransactionDetailUpdateBar } from '@/components/transactions/TransactionDetailUpdateBar';
 import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
 import { useEnv } from '@/hooks/use-env';
-import type { TransactionDetail } from '@/lib/transactions-api';
-import { getTransactionDetail } from '@/lib/transactions-api';
-import { diffTransactionDetail } from '@/lib/transaction-detail-live';
+import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
+import { getTransactionDetail } from '@/lib/transaction/transactionsApi';
+import { diffTransactionDetail } from '@/lib/transaction/transactionDetailLive';
 
 function formatEnvLabel(env: 'sandbox' | 'production') {
   return env === 'sandbox' ? 'Sandbox' : 'Production';

@@ -1,4 +1,5 @@
-import type { TransactionDetail } from '@/lib/transactions-api';
+//상세 화면용 diff 계산기
+import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
 
 type DetailDiffInput = {
   displayedDetail: TransactionDetail;

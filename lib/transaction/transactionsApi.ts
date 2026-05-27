@@ -1,5 +1,5 @@
-import { http } from '@/lib/http';
-import type { Env } from '@/lib/env';
+import { http } from '@/lib/auth/http';
+import type { Env } from '@/lib/auth/env';
 
 export type TransactionStatus = 'pending' | 'succeeded' | 'failed' | 'refunded';
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout } from '@/lib/auth-api';
+import { logout } from '@/lib/auth/auth-api';
 import { useAuthStore } from '@/stores/auth-store';
 import { Header } from '@/components/Header';
 
