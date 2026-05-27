@@ -24,7 +24,7 @@ const fs = require('fs');
 const jsonServer = require('json-server');
 
 const server = jsonServer.create();
-const middlewares = jsonServer.defaults({ logger: true, noCors: true });
+const middlewares = jsonServer.defaults({ logger: true });
 
 // ---------------------------------------------------------------------------
 // 메모리 내 상태
@@ -52,7 +52,7 @@ const counters = {
 const DEFAULT_TICK_INTERVAL_MS = 6000;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
-const AUTH_COOKIE_NAME = 'hopae_auth_token';
+const AUTH_COOKIE_NAME = 'mock_auth';
 
 const VALID_USER = {
   id: 'usr_demo',
@@ -70,50 +70,55 @@ function isValidToken(token) {
 }
 
 function buildAuthCookie(token) {
-  return [
-    `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}`,
-    'HttpOnly',
-    'Path=/',
-    'SameSite=Lax',
-    'Max-Age=86400',
-  ].join('; ');
+  return `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax`;
 }
 
-function parseCookieHeader(rawHeader) {
-  if (typeof rawHeader !== 'string' || rawHeader.trim() === '') {
-    return {};
-  }
+function buildExpiredAuthCookie() {
+  return `${AUTH_COOKIE_NAME}=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax`;
+}
 
-  return rawHeader.split(';').reduce((cookies, chunk) => {
-    const [rawName, ...rawValueParts] = chunk.split('=');
-    const name = rawName ? rawName.trim() : '';
-    const value = rawValueParts.join('=').trim();
-    if (!name) {
-      return cookies;
-    }
+function parseCookies(req) {
+  const header = req.get('Cookie') || '';
 
+  return header.split(';').reduce((cookies, part) => {
+    const trimmed = part.trim();
+    if (!trimmed) return cookies;
+
+    const separatorIndex = trimmed.indexOf('=');
+    if (separatorIndex === -1) return cookies;
+
+    const name = trimmed.slice(0, separatorIndex);
+    const value = trimmed.slice(separatorIndex + 1);
     try {
       cookies[name] = decodeURIComponent(value);
     } catch {
-      cookies[name] = value;
+      cookies[name] = null;
     }
     return cookies;
   }, {});
 }
 
-function extractAuthTokenFromCookieHeader(rawHeader) {
-  const cookies = parseCookieHeader(rawHeader);
+function getAuthTokenFromCookie(req) {
+  const cookies = parseCookies(req);
   return cookies[AUTH_COOKIE_NAME] || null;
 }
 
 function requireAuth(req, res, next) {
-  const token = extractAuthTokenFromCookieHeader(req.get('Cookie') || '');
+  const token = getAuthTokenFromCookie(req);
   if (!token) {
-    return res.status(401).json({ error: 'Missing or invalid auth cookie' });
+    return res.status(401).json({ error: 'Missing auth cookie' });
   }
+
   if (!isValidToken(token)) {
     return res.status(401).json({ error: 'Invalid token' });
   }
+
+  req.user = {
+    id: VALID_USER.id,
+    name: VALID_USER.name,
+    email: VALID_USER.email,
+  };
+
   return next();
 }
 
@@ -130,23 +135,8 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function isAllowedDevOrigin(origin) {
-  return typeof origin === 'string' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-}
 
-// 문제: `parseInt(...) || 6000` 방식은 TICK_INTERVAL_MS=0도 기본값으로 덮어써서
-//       README에 적힌 freeze 모드가 실제로는 동작하지 않음.
-// 해결: 0도 정상값으로 인정하고, 음수/NaN일 때만 기본값을 사용함.
-// 헬퍼함수 추가1: tickIntervalMs 파싱 로직을 별도 함수로 분리
-function parseTickIntervalMs(rawValue) {
-  const parsedValue = parseInt(rawValue, 10);
-  if (Number.isNaN(parsedValue) || parsedValue < 0) {
-    return DEFAULT_TICK_INTERVAL_MS;
-  }
-  return parsedValue;
-}
-
-// 헬퍼함수 추가2: limit 파싱 로직을 별도 함수로 분리 (음수 제거)
+//헬퍼함수 추가2: limit 파싱 로직을 별도 함수로 분리 (음수 제거)
 function parseLimitParam(rawValue) {
   if (rawValue == null) {
     return { ok: true, value: DEFAULT_LIMIT };
@@ -187,19 +177,17 @@ function getPendingResolutionEventType(succeeded) {
 
 server.use(jsonServer.bodyParser);
 server.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
   const origin = req.get('Origin');
-  if (isAllowedDevOrigin(origin)) {
+  if (origin) {
     res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
     res.header('Vary', 'Origin');
   }
-
   if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
     return res.sendStatus(204);
   }
-
   return next();
 });
 server.use((req, res, next) => {
@@ -215,16 +203,21 @@ server.use(middlewares);
 server.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body || {};
   if (email === VALID_USER.email && password === VALID_USER.password) {
-    const token = makeToken(VALID_USER.id);
-    // 문제: 토큰을 응답 body로 노출하면 프론트가 localStorage 같은 JS 접근 가능한
-    //       저장소에 넣기 쉬워져 cookie 기반 인증 구조와 어긋남.
-    // 해결: 로그인 성공 시 httpOnly cookie만 설정하고, body에는 user 정보만 반환함.
-    res.setHeader('Set-Cookie', buildAuthCookie(token));
+    res.setHeader('Set-Cookie', buildAuthCookie(makeToken(VALID_USER.id)));
     return res.json({
       user: { id: VALID_USER.id, name: VALID_USER.name, email: VALID_USER.email },
     });
   }
   return res.status(401).json({ error: 'Invalid email or password' });
+});
+
+server.get('/api/auth/me', requireAuth, (req, res) => {
+  return res.json({ user: req.user });
+});
+
+server.post('/api/auth/logout', (req, res) => {
+  res.setHeader('Set-Cookie', buildExpiredAuthCookie());
+  return res.json({ ok: true });
 });
 
 // ---------------------------------------------------------------------------
@@ -417,16 +410,20 @@ function tick(env) {
 }
 
 
-const TICK_INTERVAL_MS = parseTickIntervalMs(process.env.TICK_INTERVAL_MS);
+const TICK_INTERVAL_MS = parseInt(process.env.TICK_INTERVAL_MS, 10) || 6000;
 let tickHandle = null;
 if (TICK_INTERVAL_MS > 0) {
   // 두 환경의 변화 시점이 완전히 겹치지 않도록 약간 어긋나게 함.
-  setTimeout(() => tick('sandbox'), 2000);
-  setTimeout(() => tick('production'), 4000);
+  const sandboxStartTimeout = setTimeout(() => tick('sandbox'), 2000);
+  const productionStartTimeout = setTimeout(() => tick('production'), 4000);
   tickHandle = setInterval(() => {
     tick('sandbox');
-    setTimeout(() => tick('production'), TICK_INTERVAL_MS / 2);
+    const productionOffsetTimeout = setTimeout(() => tick('production'), TICK_INTERVAL_MS / 2);
+    productionOffsetTimeout.unref();
   }, TICK_INTERVAL_MS);
+  sandboxStartTimeout.unref();
+  productionStartTimeout.unref();
+  tickHandle.unref();
 }
 
 // ---------------------------------------------------------------------------
@@ -453,7 +450,6 @@ function startServer() {
     console.log('  GET  /api/transactions/:id?env=sandbox|production');
     console.log('');
     console.log(`  Test credentials: ${VALID_USER.email} / ${VALID_USER.password}`);
-    console.log(`  Auth cookie name: ${AUTH_COOKIE_NAME} (send browser requests with credentials: include)`);
     console.log(`  Background data changes: every ${TICK_INTERVAL_MS} ms per env (default: ${DEFAULT_TICK_INTERVAL_MS}, set TICK_INTERVAL_MS=0 to freeze)`);
     console.log('');
   });
@@ -469,14 +465,10 @@ if (require.main === module) {
 }
 
 module.exports = {
-  AUTH_COOKIE_NAME,
   DEFAULT_TICK_INTERVAL_MS,
-  buildAuthCookie,
-  extractAuthTokenFromCookieHeader,
   getPendingResolutionEventType,
   parseEnvQueryParam,
   parseLimitParam,
-  parseTickIntervalMs,
   server,
   shutdownServer,
   startServer,

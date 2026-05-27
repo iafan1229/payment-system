@@ -7,7 +7,7 @@
     "seed": "node seed.js",
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test"
   },
   "dependencies": {
     "json-server": "0.17.4"

@@ -26,15 +26,37 @@ password: password123
 
 ```json
 Request:  { "email": "demo@hopae.com", "password": "password123" }
-Response: { "user":  { "id": "...", "name": "...", "email": "..." } }
+Response: { "user": { "id": "...", "name": "...", "email": "..." } }
 ```
 
-On success, the server sets an `httpOnly` auth cookie. Browser clients should
-send subsequent requests with `credentials: 'include'`.
+Sets an `httpOnly` auth cookie. Browser clients should send the login request
+with `credentials: 'include'` so the cookie is stored, and should keep using
+`credentials: 'include'` on every later cookie-authenticated request.
+
+### `GET /api/auth/me`
+
+Returns `401` when the auth cookie is missing or invalid.
+
+```json
+Response: { "user": { "id": "...", "name": "...", "email": "..." } }
+```
+
+Browser callers should use `credentials: 'include'`.
+
+### `POST /api/auth/logout`
+
+Clears the auth cookie and returns:
+
+```json
+{ "ok": true }
+```
+
+Browser callers should use `credentials: 'include'`.
 
 ### `GET /api/transactions?env=&limit=&cursor=`
 
-Authenticated via cookie (`credentials: 'include'` in the browser)
+Requires the auth cookie from `POST /api/auth/login`. Browser callers should
+use `credentials: 'include'`.
 
 Query params:
 - `env` — `sandbox` or `production` (required)
@@ -59,7 +81,9 @@ List rows return a **subset** of fields. `payment_method`, `events`, and
 
 ### `GET /api/transactions/:id`
 
-Authenticated via cookie (`credentials: 'include'` in the browser)
+Requires the auth cookie from `POST /api/auth/login`. Browser callers should
+use `credentials: 'include'`.
+
 Query params:
 - `env` — `sandbox` or `production` (required)
 
