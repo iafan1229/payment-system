@@ -356,6 +356,19 @@ button {
   margin-bottom: 16px;
 }
 
+.load-more-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.load-more-copy {
+  margin: 0;
+  color: var(--muted);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+}
+
 .detail-grid {
   display: grid;
   gap: 16px;
