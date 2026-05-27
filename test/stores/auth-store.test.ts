@@ -1,4 +1,5 @@
-import { useAuthStore, type AuthUser } from '@/stores/auth-store';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import type { AuthUser } from '@/features/auth/types/auth';
 
 describe('useAuthStore', () => {
   const mockUser: AuthUser = {

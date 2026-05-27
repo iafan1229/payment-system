@@ -2,9 +2,9 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { logout } from '@/lib/auth/auth-api';
-import { useAuthStore } from '@/stores/auth-store';
-import { Header } from '@/components/Header';
+import { logout } from '@/features/auth/api/authApi';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import { Header } from '@/shared/components/layout/Header';
 
 type ProtectedLayoutProps = {
   children: ReactNode;

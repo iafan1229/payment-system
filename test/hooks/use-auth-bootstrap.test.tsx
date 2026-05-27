@@ -1,11 +1,12 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getMe } from '@/lib/auth/auth-api';
-import { useAuthBootstrap } from '@/hooks/useAuthBootstrap';
-import { HttpError } from '@/lib/auth/http';
-import { useAuthStore, type AuthUser } from '@/stores/auth-store';
+import { getMe } from '@/features/auth/api/authApi';
+import { useAuthBootstrap } from '@/features/auth/hooks/useAuthBootstrap';
+import { HttpError } from '@/shared/api/http';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import type { AuthUser } from '@/features/auth/types/auth';
 
-vi.mock('@/lib/auth-api', () => ({
+vi.mock('@/features/auth/api/authApi', () => ({
   getMe: vi.fn()
 }));
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { TransactionRow } from '@/lib/transaction/transactionsApi';
-import { diffTransactions, mergeQueuedRows, preserveVisibleRows } from '@/lib/transaction/transactionsLive';
+import type { TransactionRow } from '@/features/transactions/types/transaction';
+import { diffTransactions, mergeQueuedRows, preserveVisibleRows } from '@/features/transactions/lib/transactionsLive';
 
 function createRow(overrides: Partial<TransactionRow> & Pick<TransactionRow, 'id'>): TransactionRow {
   return {

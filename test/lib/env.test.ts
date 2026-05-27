@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildEnvChangeUrl, buildUrlWithEnv, isTransactionDetailPath, normalizeEnv, resolveInitialEnv } from '@/lib/auth/env';
+import { buildEnvChangeUrl, buildUrlWithEnv, isTransactionDetailPath, normalizeEnv, resolveInitialEnv } from '@/shared/lib/env';
 
 describe('env helpers', () => {
   it('normalizes invalid values to sandbox', () => {

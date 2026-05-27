@@ -1,144 +1,31 @@
 'use client';
 
-import { startTransition, useEffect, useRef, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { TransactionDetailUpdateBar } from '@/components/transactions/TransactionDetailUpdateBar';
-import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
-import { useEnv } from '@/hooks/useEnv';
-import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
-import { getTransactionDetail } from '@/lib/transaction/transactionsApi';
-import { diffTransactionDetail } from '@/lib/transaction/transactionDetailLive';
+import { TransactionDetailUpdateBar } from '@/features/transactions/components/detail/TransactionDetailUpdateBar';
+import { TransactionDetailView } from '@/features/transactions/components/detail/TransactionDetailView';
+import { useTransactionDetail } from '@/features/transactions/hooks/useTransactionDetail';
+import { ErrorState } from '@/shared/components/ui/ErrorState';
+import { LoadingState } from '@/shared/components/ui/LoadingState';
 
 function formatEnvLabel(env: 'sandbox' | 'production') {
   return env === 'sandbox' ? 'Sandbox' : 'Production';
 }
 
 export default function TransactionDetailPage() {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const { env } = useEnv();
-  const id = params.id;
-  const acceptedDetailRef = useRef<TransactionDetail | null>(null);
-  const previousServerDetailRef = useRef<TransactionDetail | null>(null);
-  const [acceptedDetail, setAcceptedDetail] = useState<TransactionDetail | null>(null);
-  const [pendingMetadata, setPendingMetadata] = useState<Record<string, string> | null>(null);
-  const [pendingPaymentMethod, setPendingPaymentMethod] = useState<TransactionDetail['payment_method'] | null>(null);
-  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
-  const [pollingErrorMessage, setPollingErrorMessage] = useState<string | null>(null);
-  const [highlightedCards, setHighlightedCards] = useState<string[]>([]);
-  const [highlightedEventKeys, setHighlightedEventKeys] = useState<string[]>([]);
-  const query = useQuery({
-    queryKey: ['transaction', env, id],
-    queryFn: () => getTransactionDetail(env, id),
-    refetchInterval: 5000,
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: true
-  });
-
-  useEffect(() => {
-    if (!query.data) {
-      return;
-    }
-
-    if (!previousServerDetailRef.current) {
-      previousServerDetailRef.current = query.data;
-      acceptedDetailRef.current = query.data;
-      setAcceptedDetail(query.data);
-      setPendingMetadata(null);
-      setPendingPaymentMethod(null);
-      setUpdateMessage(null);
-      setHighlightedCards([]);
-      setHighlightedEventKeys([]);
-      return;
-    }
-
-    if (!acceptedDetailRef.current) {
-      acceptedDetailRef.current = query.data;
-      setAcceptedDetail(query.data);
-      return;
-    }
-
-    const diff = diffTransactionDetail({
-      displayedDetail: acceptedDetailRef.current,
-      previousServerDetail: previousServerDetailRef.current,
-      nextServerDetail: query.data
-    });
-
-    previousServerDetailRef.current = query.data;
-    acceptedDetailRef.current = diff.nextAcceptedDetail;
-    setAcceptedDetail(diff.nextAcceptedDetail);
-    setPendingMetadata(diff.pendingMetadata);
-    setPendingPaymentMethod(diff.pendingPaymentMethod);
-    setUpdateMessage(diff.message);
-    setHighlightedCards([
-      ...(diff.summaryChanged ? ['summary'] : []),
-      ...(diff.pendingMetadata ? ['metadata'] : []),
-      ...(diff.pendingPaymentMethod ? ['payment_method'] : []),
-      ...(diff.appendedEvents.length > 0 ? ['timeline'] : [])
-    ]);
-    setHighlightedEventKeys(diff.appendedEvents.map((event) => `${event.type}-${event.at}`));
-  }, [query.data, query.dataUpdatedAt]);
-
-  useEffect(() => {
-    if (!query.isRefetchError) {
-      setPollingErrorMessage(null);
-      return;
-    }
-
-    setPollingErrorMessage('최신 변경사항을 가져오지 못했습니다. 다음 주기에 다시 시도합니다.');
-  }, [query.isRefetchError]);
-
-  useEffect(() => {
-    if (highlightedCards.length === 0 && highlightedEventKeys.length === 0) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setHighlightedCards([]);
-      setHighlightedEventKeys([]);
-    }, 2600);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [highlightedCards, highlightedEventKeys]);
-
-  useEffect(() => {
-    acceptedDetailRef.current = null;
-    previousServerDetailRef.current = null;
-    setAcceptedDetail(null);
-    setPendingMetadata(null);
-    setPendingPaymentMethod(null);
-    setUpdateMessage(null);
-    setPollingErrorMessage(null);
-    setHighlightedCards([]);
-    setHighlightedEventKeys([]);
-  }, [env, id]);
-
-  function handleApplyPendingChanges() {
-    if (!acceptedDetailRef.current || (!pendingMetadata && !pendingPaymentMethod)) {
-      return;
-    }
-
-    startTransition(() => {
-      const nextDetail = {
-        ...acceptedDetailRef.current!,
-        metadata: pendingMetadata ?? acceptedDetailRef.current!.metadata,
-        payment_method: pendingPaymentMethod ?? acceptedDetailRef.current!.payment_method
-      };
-
-      acceptedDetailRef.current = nextDetail;
-      setAcceptedDetail(nextDetail);
-      setPendingMetadata(null);
-      setPendingPaymentMethod(null);
-      setHighlightedCards([
-        ...(pendingMetadata ? ['metadata'] : []),
-        ...(pendingPaymentMethod ? ['payment_method'] : [])
-      ]);
-      setUpdateMessage('보류 중이던 본문 변경을 화면에 반영했습니다.');
-    });
-  }
+  const {
+    env,
+    acceptedDetail,
+    pendingMetadata,
+    pendingPaymentMethod,
+    highlightedCards,
+    highlightedEventKeys,
+    updateMessage,
+    pollingErrorMessage,
+    hasPendingChanges,
+    handleApplyPendingChanges,
+    handleBackToList,
+    isLoading,
+    errorMessage
+  } = useTransactionDetail();
 
   return (
     <main
@@ -179,31 +66,22 @@ export default function TransactionDetailPage() {
           env={env}
           message={updateMessage}
           errorMessage={pollingErrorMessage}
-          hasPendingChanges={Boolean(pendingMetadata || pendingPaymentMethod)}
+          hasPendingChanges={hasPendingChanges}
           onApply={handleApplyPendingChanges}
         />
 
         <div className="mb-5">
           <button
             type="button"
-            onClick={() => router.push(`/transactions?env=${env}`)}
+            onClick={handleBackToList}
             className="rounded-full border border-black/10 bg-white/78 px-5 py-3 text-sm font-semibold text-slate-800 shadow-[0_16px_32px_rgba(15,23,42,0.08)] transition-colors hover:bg-white"
           >
             목록으로
           </button>
         </div>
 
-        {query.isLoading && !acceptedDetail ? (
-          <p className="rounded-[2rem] border border-black/10 bg-white/78 p-6 shadow-[0_24px_64px_rgba(15,23,42,0.08)]">
-            상세를 불러오는 중...
-          </p>
-        ) : null}
-
-        {query.isError && !acceptedDetail ? (
-          <p className="rounded-[2rem] border border-rose-200 bg-rose-50 p-6 text-rose-700 shadow-[0_24px_64px_rgba(15,23,42,0.08)]">
-            {query.error.message}
-          </p>
-        ) : null}
+        {isLoading ? <LoadingState message="상세를 불러오는 중..." /> : null}
+        {errorMessage ? <ErrorState message={errorMessage} /> : null}
 
         {acceptedDetail ? (
           <TransactionDetailView

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { TransactionDetail } from '@/lib/transaction/transactionsApi';
-import { diffTransactionDetail } from '@/lib/transaction/transactionDetailLive';
+import type { TransactionDetail } from '@/features/transactions/types/transaction';
+import { diffTransactionDetail } from '@/features/transactions/lib/transactionDetailLive';
 
 function createDetail(overrides: Partial<TransactionDetail> & Pick<TransactionDetail, 'id'>): TransactionDetail {
   return {

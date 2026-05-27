@@ -1,184 +1,44 @@
 'use client';
 
-import { startTransition, useDeferredValue, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { EnvironmentContextStrip } from '@/components/transactions/EnvironmentContextStrip';
-import { EnvSwitcher } from '@/components/transactions/EnvSwitcher';
-import { TransactionsHeader } from '@/components/transactions/TransactionsHeader';
-import { NewTransactionsBanner } from '@/components/transactions/NewTransactionsBanner';
-import { TransactionsLiveBar } from '@/components/transactions/TransactionsLiveBar';
-import { TransactionsTable } from '@/components/transactions/TransactionsTable';
-import { useAuthStore } from '@/stores/auth-store';
-import { useEnv } from '@/hooks/useEnv';
-import type { Env } from '@/lib/auth/env';
-import { getTransactions } from '@/lib/transaction/transactionsApi';
-import { buildTransactionsFeed } from '@/lib/transaction/transactionsFeed';
-import { diffTransactions, mergeQueuedRows, preserveVisibleRows } from '@/lib/transaction/transactionsLive';
+import { EnvironmentContextStrip } from '@/features/transactions/components/list/EnvironmentContextStrip';
+import { NewTransactionsBanner } from '@/features/transactions/components/list/NewTransactionsBanner';
+import { TransactionsHeader } from '@/features/transactions/components/list/TransactionsHeader';
+import { TransactionsLiveBar } from '@/features/transactions/components/list/TransactionsLiveBar';
+import { TransactionsTable } from '@/features/transactions/components/list/TransactionsTable';
+import { useTransactionsList } from '@/features/transactions/hooks/useTransactionsList';
+import { EnvSwitcher } from '@/shared/components/env/EnvSwitcher';
+import { ErrorState } from '@/shared/components/ui/ErrorState';
+import { LoadingState } from '@/shared/components/ui/LoadingState';
 
 export default function TransactionsPage() {
-  const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const { env, setEnv } = useEnv();
-  const [displayRows, setDisplayRows] = useState<ReturnType<typeof buildTransactionsFeed>['rows']>([]);
-  const [queuedNewRows, setQueuedNewRows] = useState<ReturnType<typeof buildTransactionsFeed>['rows']>([]);
-  const [freshRowIds, setFreshRowIds] = useState<string[]>([]);
-  const [changedRowIds, setChangedRowIds] = useState<string[]>([]);
-  const [isNearTop, setIsNearTop] = useState(true);
-  const [pendingEnv, setPendingEnv] = useState<Env | null>(null);
-  const [showProductionConfirm, setShowProductionConfirm] = useState(false);
-  const topSentinelRef = useRef<HTMLDivElement | null>(null);
-  const previousServerRowsRef = useRef<ReturnType<typeof buildTransactionsFeed>['rows']>([]);
-  const query = useInfiniteQuery({
-    queryKey: ['transactions', env],
-    queryFn: ({ pageParam }) => getTransactions(env, pageParam),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
-    refetchInterval: 5000,
-    refetchOnWindowFocus: false
-  });
-  const feed = buildTransactionsFeed(query.data?.pages ?? []);
-  const deferredRows = useDeferredValue(displayRows);
-  const liveNewCount = queuedNewRows.length > 0 ? queuedNewRows.length : freshRowIds.length;
-
-  useEffect(() => {
-    if (!topSentinelRef.current) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsNearTop(entry.isIntersecting);
-      },
-      {
-        root: null,
-        rootMargin: '160px 0px 0px 0px',
-        threshold: 0
-      }
-    );
-
-    observer.observe(topSentinelRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!query.data) {
-      return;
-    }
-
-    const serverRows = feed.rows;
-    const previousRows = previousServerRowsRef.current;
-    const diff = diffTransactions(previousRows, serverRows);
-
-    if (previousRows.length === 0) {
-      setDisplayRows(serverRows);
-      setFreshRowIds([]);
-      setChangedRowIds([]);
-      previousServerRowsRef.current = serverRows;
-      return;
-    }
-
-    if (diff.newRows.length === 0 && diff.appendedRows.length === 0 && diff.changedRowIds.length === 0) {
-      if (queuedNewRows.length > 0) {
-        setDisplayRows((currentRows) => preserveVisibleRows(currentRows, diff));
-      } else {
-        setDisplayRows(serverRows);
-      }
-
-      setChangedRowIds([]);
-      previousServerRowsRef.current = serverRows;
-      return;
-    }
-
-    if (isNearTop) {
-      setDisplayRows(serverRows);
-      setQueuedNewRows([]);
-      setFreshRowIds(diff.newRows.map((row) => row.id));
-    } else {
-      setDisplayRows((currentRows) => {
-        const visibleRows = preserveVisibleRows(currentRows, diff);
-
-        if (diff.appendedRows.length === 0) {
-          return visibleRows;
-        }
-
-        return [...visibleRows, ...diff.appendedRows];
-      });
-      setQueuedNewRows((currentRows) => mergeQueuedRows(currentRows, diff.newRows));
-    }
-
-    setChangedRowIds(diff.changedRowIds);
-    previousServerRowsRef.current = serverRows;
-  }, [isNearTop, query.data, query.dataUpdatedAt, queuedNewRows.length]);
-
-  useEffect(() => {
-    previousServerRowsRef.current = [];
-    setDisplayRows([]);
-    setQueuedNewRows([]);
-    setFreshRowIds([]);
-    setChangedRowIds([]);
-  }, [env]);
-
-  useEffect(() => {
-    if (freshRowIds.length === 0) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setFreshRowIds([]);
-    }, 4000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [freshRowIds]);
-
-  useEffect(() => {
-    if (changedRowIds.length === 0) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setChangedRowIds([]);
-    }, 2600);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [changedRowIds]);
-
-  useEffect(() => {
-    setPendingEnv(null);
-    setShowProductionConfirm(false);
-  }, [env]);
-
-  function handleEnvRequest(nextEnv: Env) {
-    if (env === 'sandbox' && nextEnv === 'production') {
-      setPendingEnv(nextEnv);
-      setShowProductionConfirm(true);
-      return;
-    }
-
-    setEnv(nextEnv);
-  }
-
-  function handleEnvConfirm() {
-    if (!pendingEnv) {
-      return;
-    }
-
-    setShowProductionConfirm(false);
-    setEnv(pendingEnv);
-    setPendingEnv(null);
-  }
-
-  function handleEnvCancel() {
-    setShowProductionConfirm(false);
-    setPendingEnv(null);
-  }
+  const {
+    env,
+    userName,
+    topSentinelRef,
+    pendingEnv,
+    showProductionConfirm,
+    handleEnvRequest,
+    handleEnvConfirm,
+    handleEnvCancel,
+    isLoading,
+    errorMessage,
+    hasData,
+    dataUpdatedAt,
+    liveNewCount,
+    changedCount,
+    isPolling,
+    hasPollingError,
+    queuedNewCount,
+    handleApplyQueuedRows,
+    rows,
+    freshRowIds,
+    changedRowIds,
+    handleSelectTransaction,
+    hasMore,
+    isFetchingNextPage,
+    handleFetchNextPage,
+    hasRows
+  } = useTransactionsList();
 
   return (
     <main
@@ -194,7 +54,7 @@ export default function TransactionsPage() {
 
       <section className="mx-auto w-full max-w-7xl">
         <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <TransactionsHeader userName={user ? user.name : null} />
+          <TransactionsHeader userName={userName} />
 
           <EnvSwitcher
             env={env}
@@ -208,61 +68,42 @@ export default function TransactionsPage() {
 
         <EnvironmentContextStrip env={env} />
 
-        {query.isLoading ? (
-          <p className="rounded-[2rem] border border-black/10 bg-white/78 p-6 shadow-[0_24px_64px_rgba(15,23,42,0.08)]">
-            목록을 불러오는 중...
-          </p>
-        ) : null}
+        {isLoading ? <LoadingState message="목록을 불러오는 중..." /> : null}
+        {errorMessage ? <ErrorState message={errorMessage} /> : null}
 
-        {query.isError && !query.data ? (
-          <p className="rounded-[2rem] border border-rose-200 bg-rose-50 p-6 text-rose-700 shadow-[0_24px_64px_rgba(15,23,42,0.08)]">
-            {query.error.message}
-          </p>
-        ) : null}
-
-        {query.data ? (
+        {hasData ? (
           <>
             <TransactionsLiveBar
               env={env}
-              dataUpdatedAt={query.dataUpdatedAt}
+              dataUpdatedAt={dataUpdatedAt}
               newCount={liveNewCount}
-              changedCount={changedRowIds.length}
-              isFetching={query.isFetching && !query.isFetchingNextPage}
-              hasPollingError={query.isRefetchError}
+              changedCount={changedCount}
+              isFetching={isPolling}
+              hasPollingError={hasPollingError}
             />
 
-            <NewTransactionsBanner
-              env={env}
-              count={queuedNewRows.length}
-              onApply={() => {
-                startTransition(() => {
-                  setDisplayRows(feed.rows);
-                  setFreshRowIds(queuedNewRows.map((row) => row.id));
-                  setQueuedNewRows([]);
-                });
-              }}
-            />
+            <NewTransactionsBanner env={env} count={queuedNewCount} onApply={handleApplyQueuedRows} />
 
             <TransactionsTable
               env={env}
-              rows={deferredRows}
+              rows={rows}
               freshRowIds={freshRowIds}
               changedRowIds={changedRowIds}
-              onSelect={(id) => router.push(`/transactions/${id}?env=${env}`)}
+              onSelect={handleSelectTransaction}
             />
 
-            {feed.hasMore ? (
+            {hasMore ? (
               <div className="mt-5 flex justify-center">
                 <button
                   type="button"
-                  onClick={() => query.fetchNextPage()}
-                  disabled={query.isFetchingNextPage}
+                  onClick={handleFetchNextPage}
+                  disabled={isFetchingNextPage}
                   className="rounded-full border border-black/10 bg-white/78 px-5 py-3 text-sm font-semibold text-slate-800 shadow-[0_16px_32px_rgba(15,23,42,0.08)] transition-colors hover:bg-white disabled:cursor-wait disabled:opacity-70"
                 >
-                  {query.isFetchingNextPage ? '이전 거래를 불러오는 중...' : '이전 거래 더 불러오기'}
+                  {isFetchingNextPage ? '이전 거래를 불러오는 중...' : '이전 거래 더 불러오기'}
                 </button>
               </div>
-            ) : deferredRows.length > 0 ? (
+            ) : hasRows ? (
               <div className="mt-5 flex justify-center">
                 <p className="text-sm text-slate-500">현재 불러올 수 있는 거래를 모두 확인했습니다.</p>
               </div>

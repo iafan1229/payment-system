@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useEnv } from '@/hooks/useEnv';
+import { useEnv } from '@/shared/hooks/useEnv';
 
 const pushMock = vi.fn();
 const replaceMock = vi.fn();

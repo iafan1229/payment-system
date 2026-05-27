@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildTransactionsFeed } from '@/lib/transaction/transactionsFeed';
-import type { TransactionsPage } from '@/lib/transaction/transactionsApi';
+import { buildTransactionsFeed } from '@/features/transactions/lib/transactionsFeed';
+import type { TransactionsPage } from '@/features/transactions/types/transaction';
 
 function createPage(input: Partial<TransactionsPage> & Pick<TransactionsPage, 'data'>): TransactionsPage {
   return {

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { LoginForm } from '@/components/auth/LoginForm';
+import { LoginForm } from '@/features/auth/components/LoginForm';
 
 describe('LoginForm', () => {
   it('submits email and password', async () => {
