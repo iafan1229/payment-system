@@ -62,4 +62,17 @@ describe('useEnv', () => {
     expect(pushMock).toHaveBeenCalledWith('/transactions?env=production');
     expect(window.localStorage.getItem('hopae:last-env')).toBe('production');
   });
+
+  it('routes detail page env changes back to the list URL', () => {
+    pathname = '/transactions/txn_123';
+    searchParams = new URLSearchParams('env=sandbox');
+
+    const { result } = renderHook(() => useEnv());
+
+    act(() => {
+      result.current.setEnv('production');
+    });
+
+    expect(pushMock).toHaveBeenCalledWith('/transactions?env=production');
+  });
 });

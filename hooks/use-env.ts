@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { normalizeEnv, resolveInitialEnv, type Env } from '@/lib/env';
-
-const STORAGE_KEY = 'hopae:last-env';
-
-function buildUrl(pathname: string, searchParams: URLSearchParams) {
-  const query = searchParams.toString();
-
-  return query ? `${pathname}?${query}` : pathname;
-}
+import {
+  buildEnvChangeUrl,
+  buildUrlWithEnv,
+  ENV_STORAGE_KEY,
+  isTransactionDetailPath,
+  normalizeEnv,
+  resolveInitialEnv,
+  type Env
+} from '@/lib/env';
 
 export function useEnv() {
   const router = useRouter();
@@ -18,29 +18,29 @@ export function useEnv() {
   const searchParams = useSearchParams();
   const currentEnvParam = searchParams.get('env');
   const env = normalizeEnv(currentEnvParam);
+  const previousEnvRef = useRef(env);
 
   useEffect(() => {
-    const storedValue = window.localStorage.getItem(STORAGE_KEY);
+    const storedValue = window.localStorage.getItem(ENV_STORAGE_KEY);
     const nextEnv = resolveInitialEnv(currentEnvParam, storedValue);
 
-    window.localStorage.setItem(STORAGE_KEY, nextEnv);
+    window.localStorage.setItem(ENV_STORAGE_KEY, nextEnv);
 
     if (currentEnvParam === nextEnv) {
-      return;
+      if (isTransactionDetailPath(pathname) && previousEnvRef.current !== env) {
+        router.replace(buildEnvChangeUrl(pathname, searchParams, env));
+      }
+    } else {
+      router.replace(buildUrlWithEnv(pathname, searchParams, nextEnv));
     }
 
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-    nextSearchParams.set('env', nextEnv);
-    router.replace(buildUrl(pathname, nextSearchParams));
-  }, [currentEnvParam, pathname, router, searchParams]);
+    previousEnvRef.current = env;
+  }, [currentEnvParam, env, pathname, router, searchParams]);
 
   function setEnv(nextEnv: Env) {
     const normalizedEnv = normalizeEnv(nextEnv);
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-
-    nextSearchParams.set('env', normalizedEnv);
-    window.localStorage.setItem(STORAGE_KEY, normalizedEnv);
-    router.push(buildUrl(pathname, nextSearchParams));
+    window.localStorage.setItem(ENV_STORAGE_KEY, normalizedEnv);
+    router.push(buildEnvChangeUrl(pathname, searchParams, normalizedEnv));
   }
 
   return { env, setEnv };
