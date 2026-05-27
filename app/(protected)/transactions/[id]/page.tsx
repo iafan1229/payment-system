@@ -2,8 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { EnvSwitcher } from '@/components/transactions/env-switcher';
-import { TransactionDetailView } from '@/components/transactions/transaction-detail';
+import { EnvSwitcher } from '@/components/transactions/EnvSwitcher';
+import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
 import { useEnv } from '@/hooks/use-env';
 import { getTransactionDetail } from '@/lib/transactions-api';
 

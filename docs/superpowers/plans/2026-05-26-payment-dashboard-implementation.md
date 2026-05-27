@@ -40,15 +40,15 @@
   - 거래 목록 화면
 - 생성: `app/(protected)/transactions/[id]/page.tsx`
   - 거래 상세 화면
-- 생성: `components/auth/login-form.tsx`
+- 생성: `components/auth/LoginForm.tsx`
   - 로그인 폼 UI
 - 생성: `components/auth/auth-bootstrap.tsx`
   - 앱 시작 시 세션 복원
-- 생성: `components/transactions/env-switcher.tsx`
+- 생성: `components/transactions/EnvSwitcher.tsx`
   - 환경 전환 UI
-- 생성: `components/transactions/transactions-table.tsx`
+- 생성: `components/transactions/TransactionsTable.tsx`
   - 거래 목록 테이블
-- 생성: `components/transactions/transaction-detail.tsx`
+- 생성: `components/transactions/TransactionDetailView.tsx`
   - 거래 상세 본문
 - 생성: `providers/app-providers.tsx`
   - React Query Provider 및 공통 클라이언트 프로바이더
@@ -70,7 +70,7 @@
   - env 유틸 테스트
 - 생성: `test/stores/auth-store.test.ts`
   - auth store 테스트
-- 생성: `test/components/login-form.test.tsx`
+- 생성: `test/components/LoginForm.test.tsx`
   - 로그인 폼 동작 테스트
 
 ### mock-server
@@ -659,10 +659,10 @@ git commit -m "feat: add url-based env helpers"
 ### Task 5: 로그인 페이지와 보호 레이아웃
 
 **Files:**
-- Create: `components/auth/login-form.tsx`
+- Create: `components/auth/LoginForm.tsx`
 - Create: `app/login/page.tsx`
 - Create: `app/(protected)/layout.tsx`
-- Test: `test/components/login-form.test.tsx`
+- Test: `test/components/LoginForm.test.tsx`
 
 - [ ] **Step 1: 로그인 폼 failing test 작성**
 
@@ -670,7 +670,7 @@ git commit -m "feat: add url-based env helpers"
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import { LoginForm } from '@/components/auth/login-form';
+import { LoginForm } from '@/components/auth/LoginForm';
 
 test('submits email and password', async () => {
   const user = userEvent.setup();
@@ -691,8 +691,8 @@ test('submits email and password', async () => {
 
 - [ ] **Step 2: 테스트 실패 확인**
 
-Run: `cd /Users/hylee/Desktop/payment-system && npm test -- test/components/login-form.test.tsx`  
-Expected: `Cannot find module '@/components/auth/login-form'`
+Run: `cd /Users/hylee/Desktop/payment-system && npm test -- test/components/LoginForm.test.tsx`  
+Expected: `Cannot find module '@/components/auth/LoginForm'`
 
 - [ ] **Step 3: 로그인 폼 최소 구현**
 
@@ -742,7 +742,7 @@ export function LoginForm({ onSubmit, isPending, error }: LoginFormProps) {
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LoginForm } from '@/components/auth/login-form';
+import { LoginForm } from '@/components/auth/LoginForm';
 import { login } from '@/lib/auth-api';
 import { useAuthStore } from '@/stores/auth-store';
 
@@ -804,13 +804,13 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
 
 - [ ] **Step 6: 테스트 재실행**
 
-Run: `cd /Users/hylee/Desktop/payment-system && npm test -- test/components/login-form.test.tsx`  
+Run: `cd /Users/hylee/Desktop/payment-system && npm test -- test/components/LoginForm.test.tsx`  
 Expected: PASS
 
 - [ ] **Step 7: 커밋**
 
 ```bash
-git add /Users/hylee/Desktop/payment-system/components/auth/login-form.tsx /Users/hylee/Desktop/payment-system/app/login/page.tsx /Users/hylee/Desktop/payment-system/app/(protected)/layout.tsx /Users/hylee/Desktop/payment-system/test/components/login-form.test.tsx
+git add /Users/hylee/Desktop/payment-system/components/auth/LoginForm.tsx /Users/hylee/Desktop/payment-system/app/login/page.tsx /Users/hylee/Desktop/payment-system/app/(protected)/layout.tsx /Users/hylee/Desktop/payment-system/test/components/LoginForm.test.tsx
 git commit -m "feat: add login page and protected layout"
 ```
 
@@ -818,8 +818,8 @@ git commit -m "feat: add login page and protected layout"
 
 **Files:**
 - Create: `lib/transactions-api.ts`
-- Create: `components/transactions/env-switcher.tsx`
-- Create: `components/transactions/transactions-table.tsx`
+- Create: `components/transactions/EnvSwitcher.tsx`
+- Create: `components/transactions/TransactionsTable.tsx`
 - Create: `app/(protected)/transactions/page.tsx`
 
 - [ ] **Step 1: 거래 목록 API 함수 구현**
@@ -933,8 +933,8 @@ export function TransactionsTable({
 
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { EnvSwitcher } from '@/components/transactions/env-switcher';
-import { TransactionsTable } from '@/components/transactions/transactions-table';
+import { EnvSwitcher } from '@/components/transactions/EnvSwitcher';
+import { TransactionsTable } from '@/components/transactions/TransactionsTable';
 import { useEnv } from '@/hooks/use-env';
 import { getTransactions } from '@/lib/transactions-api';
 
@@ -970,14 +970,14 @@ Expected: PASS
 - [ ] **Step 6: 커밋**
 
 ```bash
-git add /Users/hylee/Desktop/payment-system/lib/transactions-api.ts /Users/hylee/Desktop/payment-system/components/transactions/env-switcher.tsx /Users/hylee/Desktop/payment-system/components/transactions/transactions-table.tsx /Users/hylee/Desktop/payment-system/app/(protected)/transactions/page.tsx
+git add /Users/hylee/Desktop/payment-system/lib/transactions-api.ts /Users/hylee/Desktop/payment-system/components/transactions/EnvSwitcher.tsx /Users/hylee/Desktop/payment-system/components/transactions/TransactionsTable.tsx /Users/hylee/Desktop/payment-system/app/(protected)/transactions/page.tsx
 git commit -m "feat: add transaction list page"
 ```
 
 ### Task 7: 거래 상세 페이지와 조건부 polling
 
 **Files:**
-- Create: `components/transactions/transaction-detail.tsx`
+- Create: `components/transactions/TransactionDetailView.tsx`
 - Modify: `lib/transactions-api.ts`
 - Create: `app/(protected)/transactions/[id]/page.tsx`
 
@@ -1035,7 +1035,7 @@ export function TransactionDetailView({ detail }: { detail: TransactionDetail })
 
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { TransactionDetailView } from '@/components/transactions/transaction-detail';
+import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
 import { useEnv } from '@/hooks/use-env';
 import { getTransactionDetail } from '@/lib/transactions-api';
 
@@ -1073,7 +1073,7 @@ Expected: PASS
 - [ ] **Step 5: 커밋**
 
 ```bash
-git add /Users/hylee/Desktop/payment-system/lib/transactions-api.ts /Users/hylee/Desktop/payment-system/components/transactions/transaction-detail.tsx /Users/hylee/Desktop/payment-system/app/(protected)/transactions/[id]/page.tsx
+git add /Users/hylee/Desktop/payment-system/lib/transactions-api.ts /Users/hylee/Desktop/payment-system/components/transactions/TransactionDetailView.tsx /Users/hylee/Desktop/payment-system/app/(protected)/transactions/[id]/page.tsx
 git commit -m "feat: add transaction detail page"
 ```
 

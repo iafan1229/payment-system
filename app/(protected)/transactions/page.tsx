@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { EnvSwitcher } from '@/components/transactions/env-switcher';
-import { TransactionsTable } from '@/components/transactions/transactions-table';
+import { EnvSwitcher } from '@/components/transactions/EnvSwitcher';
+import { TransactionsTable } from '@/components/transactions/TransactionsTable';
 import { useAuthStore } from '@/stores/auth-store';
 import { useEnv } from '@/hooks/use-env';
 import { getTransactions } from '@/lib/transactions-api';

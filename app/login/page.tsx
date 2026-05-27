@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LoginForm } from '@/components/auth/login-form';
+import { LoginForm } from '@/components/auth/LoginForm';
 import { login } from '@/lib/auth-api';
 import { useAuthStore } from '@/stores/auth-store';
 
