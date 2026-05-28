@@ -80,6 +80,7 @@ export default function TransactionsPage() {
               changedCount={changedCount}
               isFetching={isPolling}
               hasPollingError={hasPollingError}
+              changedRowIds={changedRowIds}
             />
 
             <NewTransactionsBanner env={env} count={queuedNewCount} onApply={handleApplyQueuedRows} />
