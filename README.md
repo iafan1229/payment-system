@@ -141,8 +141,10 @@ Transaction list API는 query parameter를 사용하고, Transaction detail API�
 
 ```txt
 GET /api/transactions?env=sandbox
+→ list API는 query param 사용
 GET /api/transactions/:id
 X-Environment: sandbox
+→ detail API는 header 사용
 ```
 
 동일한 리소스(`/api/transactions`)에서 environment 전달 방식이 달라 API shape의 일관성이 부족하다고 판단했습니다.
