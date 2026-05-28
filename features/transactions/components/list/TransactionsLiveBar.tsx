@@ -1,4 +1,5 @@
 import type { Env } from '@/shared/lib/env';
+import { useRouter } from 'next/navigation';
 
 type TransactionsLiveBarProps = {
   env: Env;
@@ -7,6 +8,7 @@ type TransactionsLiveBarProps = {
   changedCount: number;
   isFetching: boolean;
   hasPollingError: boolean;
+  changedRowIds?: string[];
 };
 
 function formatSyncTime(value: number) {
@@ -27,8 +29,11 @@ export function TransactionsLiveBar({
   newCount,
   changedCount,
   isFetching,
-  hasPollingError
+  hasPollingError,
+  changedRowIds
 }: TransactionsLiveBarProps) {
+  const router = useRouter();
+
   return (
     <div
       role="status"
@@ -55,7 +60,7 @@ export function TransactionsLiveBar({
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="rounded-full border border-black/10 px-3 py-1 font-medium">새 거래 {newCount}건</span>
-        <span className="rounded-full border border-black/10 px-3 py-1 font-medium">상태 변경 {changedCount}건</span>
+        <span onClick={() => changedRowIds && changedRowIds.length > 0 ? router.push(`/transactions/${changedRowIds[0]}?env=${env}`) : alert('변경된 pending 상태가 없습니다')} className="cursor-pointer hover:text-amber-900 transition-colors rounded-full border border-black/10 bg-amber-100 px-3 py-1 font-medium hover:bg-amber-400">상태 변경 {changedCount}건</span>
         {hasPollingError ? (
           <span className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-rose-700">
             최신 갱신을 가져오지 못했습니다

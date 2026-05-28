@@ -23,6 +23,9 @@ export function useTransactionsList() {
   const [showProductionConfirm, setShowProductionConfirm] = useState(false);
   const topSentinelRef = useRef<HTMLDivElement | null>(null);
   const previousServerRowsRef = useRef<ReturnType<typeof buildTransactionsFeed>['rows']>([]);
+  //server의 tick은 몇 초마다 데이터를 바꾸기만 하지, 브라우저에 “바뀌었다”고 알려주지는 않음.->주기적 polling의 필요성 (websocket X, sse는 구현 표면적이 커짐)
+  //서버 tick: 데이터를 바꾸는 주기
+  //클라이언트 poll: 바뀐 걸 확인하는 주기
   const query = useInfiniteQuery({
     queryKey: ['transactions', env],
     queryFn: ({ pageParam }) => getTransactions(env, pageParam),

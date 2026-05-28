@@ -4,14 +4,12 @@ import type { TransactionDetail } from '@/features/transactions/types/transactio
 type TransactionPaymentMethodCardProps = {
   env: Env;
   paymentMethod: TransactionDetail['payment_method'];
-  pendingPaymentMethod: TransactionDetail['payment_method'] | null;
   highlighted: boolean;
 };
 
 export function TransactionPaymentMethodCard({
   env,
   paymentMethod,
-  pendingPaymentMethod,
   highlighted
 }: TransactionPaymentMethodCardProps) {
   return (
@@ -33,11 +31,6 @@ export function TransactionPaymentMethodCard({
         <h2 className="text-[1.45rem] font-semibold tracking-[-0.03em] text-slate-950">
           {paymentMethod.brand} •••• {paymentMethod.last4}
         </h2>
-        {pendingPaymentMethod ? (
-          <span className="w-fit rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-            서버에 새 결제수단 정보 대기 중
-          </span>
-        ) : null}
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-slate-700">

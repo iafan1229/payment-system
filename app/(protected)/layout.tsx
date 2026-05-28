@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { logout } from '@/features/auth/api/authApi';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { Header } from '@/shared/components/layout/Header';
+import { ENV_STORAGE_KEY } from '@/shared/lib/env';
 
 type ProtectedLayoutProps = {
   children: ReactNode;
@@ -42,6 +43,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
       await logout();
     } finally {
       clearUser();
+      window.localStorage.removeItem(ENV_STORAGE_KEY)
       router.replace('/login');
       setIsLoggingOut(false);
     }

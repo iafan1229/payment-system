@@ -9,8 +9,6 @@ import { CustomerCard } from '@/features/transactions/components/detail/sections
 type TransactionDetailViewProps = {
   env: Env;
   detail: TransactionDetail;
-  pendingMetadata: Record<string, string> | null;
-  pendingPaymentMethod: TransactionDetail['payment_method'] | null;
   highlightedCards: string[];
   highlightedEventKeys: string[];
 };
@@ -18,8 +16,6 @@ type TransactionDetailViewProps = {
 export function TransactionDetailView({
   env,
   detail,
-  pendingMetadata,
-  pendingPaymentMethod,
   highlightedCards,
   highlightedEventKeys
 }: TransactionDetailViewProps) {
@@ -31,13 +27,11 @@ export function TransactionDetailView({
       <TransactionPaymentMethodCard
         env={env}
         paymentMethod={detail.payment_method}
-        pendingPaymentMethod={pendingPaymentMethod}
         highlighted={highlightedCards.includes('payment_method')}
       />
       <TransactionMetadataCard
         env={env}
         metadata={detail.metadata}
-        pendingMetadata={pendingMetadata}
         highlighted={highlightedCards.includes('metadata')}
       />
     </div>

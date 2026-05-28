@@ -41,7 +41,6 @@ describe('transaction detail live helpers', () => {
     });
 
     const diff = diffTransactionDetail({
-      displayedDetail: previousServerDetail,
       previousServerDetail,
       nextServerDetail
     });
@@ -51,7 +50,7 @@ describe('transaction detail live helpers', () => {
     expect(diff.appendedEvents).toEqual([{ type: 'succeeded', at: '2026-05-27T00:00:05.000Z' }]);
   });
 
-  it('keeps metadata and payment method in a pending state until applied', () => {
+  it('applies metadata and payment method updates immediately', () => {
     const previousServerDetail = createDetail({ id: 'txn_1' });
     const nextServerDetail = createDetail({
       id: 'txn_1',
@@ -69,14 +68,13 @@ describe('transaction detail live helpers', () => {
     });
 
     const diff = diffTransactionDetail({
-      displayedDetail: previousServerDetail,
       previousServerDetail,
       nextServerDetail
     });
 
-    expect(diff.pendingMetadata).toEqual(nextServerDetail.metadata);
-    expect(diff.pendingPaymentMethod).toEqual(nextServerDetail.payment_method);
-    expect(diff.nextAcceptedDetail.metadata).toEqual(previousServerDetail.metadata);
-    expect(diff.nextAcceptedDetail.payment_method).toEqual(previousServerDetail.payment_method);
+    expect(diff.metadataChanged).toBe(true);
+    expect(diff.paymentMethodChanged).toBe(true);
+    expect(diff.nextAcceptedDetail.metadata).toEqual(nextServerDetail.metadata);
+    expect(diff.nextAcceptedDetail.payment_method).toEqual(nextServerDetail.payment_method);
   });
 });

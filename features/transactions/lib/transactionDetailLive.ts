@@ -2,17 +2,16 @@
 import type { TransactionDetail } from '@/features/transactions/types/transaction';
 
 type DetailDiffInput = {
-  displayedDetail: TransactionDetail;
   previousServerDetail: TransactionDetail;
   nextServerDetail: TransactionDetail;
 };
 
 export type DetailDiff = {
   nextAcceptedDetail: TransactionDetail;
-  pendingMetadata: Record<string, string> | null;
-  pendingPaymentMethod: TransactionDetail['payment_method'] | null;
   appendedEvents: TransactionDetail['events'];
   summaryChanged: boolean;
+  metadataChanged: boolean;
+  paymentMethodChanged: boolean;
   message: string | null;
 };
 
@@ -44,14 +43,14 @@ function buildDetailUpdateMessage({
   previousServerDetail,
   nextServerDetail,
   appendedEvents,
-  pendingMetadata,
-  pendingPaymentMethod
+  metadataChanged,
+  paymentMethodChanged
 }: {
   previousServerDetail: TransactionDetail;
   nextServerDetail: TransactionDetail;
   appendedEvents: TransactionDetail['events'];
-  pendingMetadata: Record<string, string> | null;
-  pendingPaymentMethod: TransactionDetail['payment_method'] | null;
+  metadataChanged: boolean;
+  paymentMethodChanged: boolean;
 }) {
   const messages: string[] = [];
 
@@ -63,28 +62,23 @@ function buildDetailUpdateMessage({
     messages.push(`이벤트 ${appendedEvents.length}건 추가됨`);
   }
 
-  if (pendingMetadata) {
-    messages.push(`메타데이터 변경 ${Object.keys(pendingMetadata).length}건 대기 중`);
+  if (metadataChanged) {
+    messages.push('메타데이터 갱신됨');
   }
 
-  if (pendingPaymentMethod) {
-    messages.push('결제수단 변경 대기 중');
+  if (paymentMethodChanged) {
+    messages.push('결제수단 정보 갱신됨');
   }
 
   return messages.length > 0 ? messages.join(' · ') : null;
 }
 
 export function diffTransactionDetail({
-  displayedDetail,
   previousServerDetail,
   nextServerDetail
 }: DetailDiffInput): DetailDiff {
-  const pendingMetadata = isSameRecord(displayedDetail.metadata, nextServerDetail.metadata)
-    ? null
-    : nextServerDetail.metadata;
-  const pendingPaymentMethod = isSamePaymentMethod(displayedDetail.payment_method, nextServerDetail.payment_method)
-    ? null
-    : nextServerDetail.payment_method;
+  const metadataChanged = !isSameRecord(previousServerDetail.metadata, nextServerDetail.metadata);
+  const paymentMethodChanged = !isSamePaymentMethod(previousServerDetail.payment_method, nextServerDetail.payment_method);
   const appendedEvents = nextServerDetail.events.slice(previousServerDetail.events.length);
   const summaryChanged =
     previousServerDetail.status !== nextServerDetail.status ||
@@ -92,21 +86,17 @@ export function diffTransactionDetail({
     previousServerDetail.currency !== nextServerDetail.currency;
 
   return {
-    nextAcceptedDetail: {
-      ...nextServerDetail,
-      metadata: pendingMetadata ? displayedDetail.metadata : nextServerDetail.metadata,
-      payment_method: pendingPaymentMethod ? displayedDetail.payment_method : nextServerDetail.payment_method
-    },
-    pendingMetadata,
-    pendingPaymentMethod,
+    nextAcceptedDetail: nextServerDetail,
     appendedEvents,
     summaryChanged,
+    metadataChanged,
+    paymentMethodChanged,
     message: buildDetailUpdateMessage({
       previousServerDetail,
       nextServerDetail,
       appendedEvents,
-      pendingMetadata,
-      pendingPaymentMethod
+      metadataChanged,
+      paymentMethodChanged
     })
   };
 }
