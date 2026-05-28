@@ -1,4 +1,4 @@
-# Transaction Dashboard Assignment
+# 결제 플랫폼 어드민 대시보드
 
 ## 1. 스크린샷
 
