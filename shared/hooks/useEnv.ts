@@ -12,6 +12,7 @@ import {
   type Env
 } from '@/shared/lib/env';
 
+// env를 URL query에 두고, localStorage에는 마지막 선택값을 백업. 그래서 새로고침해도 유지되고, URL만 봐도 현재 환경을 알 수 있다.
 export function useEnv() {
   const router = useRouter();
   const pathname = usePathname();

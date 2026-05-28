@@ -1,3 +1,4 @@
+// getMe()를 호출해서 쿠키 세션이 살아 있으면 authStore.ts (line 13) 에 user를 넣고, 401이면 비로그인 상태로 확정합니다.
 'use client';
 
 import { useEffect } from 'react';
