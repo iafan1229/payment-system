@@ -14,14 +14,10 @@ export default function TransactionDetailPage() {
   const {
     env,
     acceptedDetail,
-    pendingMetadata,
-    pendingPaymentMethod,
     highlightedCards,
     highlightedEventKeys,
     updateMessage,
     pollingErrorMessage,
-    hasPendingChanges,
-    handleApplyPendingChanges,
     handleBackToList,
     isLoading,
     errorMessage
@@ -45,8 +41,7 @@ export default function TransactionDetailPage() {
             </p>
 
             <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-              상세 화면은 5초 주기로 최신 상태를 따라가되, 본문 맥락을 깨는 정보는 사용자가 적용할 때까지
-              보류합니다.
+              상세 화면은 5초 주기로 최신 상태를 반영하고, 바뀐 카드와 이벤트를 바로 드러냅니다.
             </p>
           </div>
           <div className="flex flex-col items-start gap-3 md:items-end">
@@ -66,8 +61,6 @@ export default function TransactionDetailPage() {
           env={env}
           message={updateMessage}
           errorMessage={pollingErrorMessage}
-          hasPendingChanges={hasPendingChanges}
-          onApply={handleApplyPendingChanges}
         />
 
         <div className="mb-5">
@@ -87,8 +80,6 @@ export default function TransactionDetailPage() {
           <TransactionDetailView
             env={env}
             detail={acceptedDetail}
-            pendingMetadata={pendingMetadata}
-            pendingPaymentMethod={pendingPaymentMethod}
             highlightedCards={highlightedCards}
             highlightedEventKeys={highlightedEventKeys}
           />

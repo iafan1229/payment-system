@@ -4,18 +4,14 @@ type TransactionDetailUpdateBarProps = {
   env: Env;
   message: string | null;
   errorMessage: string | null;
-  hasPendingChanges: boolean;
-  onApply: () => void;
 };
 
 export function TransactionDetailUpdateBar({
   env,
   message,
-  errorMessage,
-  hasPendingChanges,
-  onApply
+  errorMessage
 }: TransactionDetailUpdateBarProps) {
-  if (!message && !errorMessage && !hasPendingChanges) {
+  if (!message && !errorMessage) {
     return null;
   }
 
@@ -33,20 +29,7 @@ export function TransactionDetailUpdateBar({
       <div className="space-y-1">
         {message ? <p className="m-0 text-sm font-medium text-slate-800">{message}</p> : null}
         {errorMessage ? <p className="m-0 text-sm text-rose-700">{errorMessage}</p> : null}
-        {!message && hasPendingChanges ? (
-          <p className="m-0 text-sm font-medium text-slate-800">보류 중인 본문 변경이 있습니다.</p>
-        ) : null}
       </div>
-
-      {hasPendingChanges ? (
-        <button
-          type="button"
-          onClick={onApply}
-          className="shrink-0 rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
-        >
-          변경 적용
-        </button>
-      ) : null}
     </div>
   );
 }

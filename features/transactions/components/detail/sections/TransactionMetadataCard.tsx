@@ -3,16 +3,10 @@ import type { Env } from '@/shared/lib/env';
 type TransactionMetadataCardProps = {
   env: Env;
   metadata: Record<string, string>;
-  pendingMetadata: Record<string, string> | null;
   highlighted: boolean;
 };
 
-export function TransactionMetadataCard({
-  env,
-  metadata,
-  pendingMetadata,
-  highlighted
-}: TransactionMetadataCardProps) {
+export function TransactionMetadataCard({ env, metadata, highlighted }: TransactionMetadataCardProps) {
   return (
     <section
       className={[
@@ -30,12 +24,6 @@ export function TransactionMetadataCard({
             Metadata
           </p>
         </div>
-        {/* {pendingMetadata ? (
-          <span className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800">
-            변경 {Object.keys(pendingMetadata).length}건 대기 중
-          </span>
-        ) : null}
-          */}
       </div>
       <div style={{ background: 'lightgray', marginBottom: 20, width: '100%', height: '1px' }} />
       <dl className="m-0 grid gap-4">
