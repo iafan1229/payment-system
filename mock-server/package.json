@@ -1,5 +1,5 @@
 {
-  "name": "hopae-take-home-mock-server",
+  "name": "test-take-home-mock-server",
   "version": "1.0.0",
   "private": true,
   "description": "Mock API server for the frontend take-home assignment.",

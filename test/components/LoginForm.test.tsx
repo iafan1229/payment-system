@@ -9,7 +9,7 @@ describe('LoginForm', () => {
     render(<LoginForm onSubmit={onSubmit} isPending={false} error={null} />);
 
     fireEvent.change(screen.getByLabelText('이메일'), {
-      target: { value: 'demo@hopae.com' }
+      target: { value: 'demo@test.com' }
     });
     fireEvent.change(screen.getByLabelText('비밀번호'), {
       target: { value: 'password123' }
@@ -17,7 +17,7 @@ describe('LoginForm', () => {
     fireEvent.click(screen.getByRole('button', { name: '로그인' }));
 
     expect(onSubmit).toHaveBeenCalledWith({
-      email: 'demo@hopae.com',
+      email: 'demo@test.com',
       password: 'password123'
     });
   });

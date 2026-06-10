@@ -57,7 +57,7 @@ const AUTH_COOKIE_NAME = 'mock_auth';
 const VALID_USER = {
   id: 'usr_demo',
   name: 'Demo Merchant',
-  email: 'demo@hopae.com',
+  email: 'demo@test.com',
   password: 'password123',
 };
 

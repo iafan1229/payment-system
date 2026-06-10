@@ -128,7 +128,7 @@ export default config;
 - [ ] **Step 1: `lib/env.ts`에 저장 키와 환경 전환 URL 해석 함수를 추가한다**
 
 ```ts
-export const ENV_STORAGE_KEY = 'hopae:last-env';
+export const ENV_STORAGE_KEY = 'test:last-env';
 
 export function isTransactionDetailPath(pathname: string) {
   return /^\/transactions\/[^/]+$/.test(pathname);

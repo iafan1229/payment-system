@@ -16,7 +16,7 @@ State is in-memory. Restart to reset.
 ## Test credentials
 
 ```
-email:    demo@hopae.com
+email:    demo@test.com
 password: password123
 ```
 
@@ -25,7 +25,7 @@ password: password123
 ### `POST /api/auth/login`
 
 ```json
-Request:  { "email": "demo@hopae.com", "password": "password123" }
+Request:  { "email": "demo@test.com", "password": "password123" }
 Response: { "user": { "id": "...", "name": "...", "email": "..." } }
 ```
 

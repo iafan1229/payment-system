@@ -40,7 +40,7 @@ async function loginAsDemo() {
     'POST',
     '/api/auth/login',
     { 'Content-Type': 'application/json' },
-    JSON.stringify({ email: 'demo@hopae.com', password: 'password123' })
+    JSON.stringify({ email: 'demo@test.com', password: 'password123' })
   );
 }
 
@@ -62,7 +62,7 @@ test('GET /api/auth/me returns the current user when the auth cookie is valid', 
     user: {
       id: 'usr_demo',
       name: 'Demo Merchant',
-      email: 'demo@hopae.com',
+      email: 'demo@test.com',
     },
   });
 });

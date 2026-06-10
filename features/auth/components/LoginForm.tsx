@@ -9,7 +9,7 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ onSubmit, isPending, error }: LoginFormProps) {
-  const [email, setEmail] = useState('demo@hopae.com');
+  const [email, setEmail] = useState('demo@test.com');
   const [password, setPassword] = useState('password123');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

@@ -32,7 +32,7 @@ describe('useEnv', () => {
     const { result } = renderHook(() => useEnv());
 
     await waitFor(() => {
-      expect(window.localStorage.getItem('hopae:last-env')).toBe('production');
+      expect(window.localStorage.getItem('test:last-env')).toBe('production');
     });
 
     expect(result.current.env).toBe('production');
@@ -41,7 +41,7 @@ describe('useEnv', () => {
 
   it('replaces the URL with the stored env when the URL value is missing', async () => {
     searchParams = new URLSearchParams('page=1');
-    window.localStorage.setItem('hopae:last-env', 'production');
+    window.localStorage.setItem('test:last-env', 'production');
 
     renderHook(() => useEnv());
 
@@ -60,7 +60,7 @@ describe('useEnv', () => {
     });
 
     expect(pushMock).toHaveBeenCalledWith('/transactions?env=production');
-    expect(window.localStorage.getItem('hopae:last-env')).toBe('production');
+    expect(window.localStorage.getItem('test:last-env')).toBe('production');
   });
 
   it('routes detail page env changes back to the list URL', () => {

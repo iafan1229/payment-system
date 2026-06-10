@@ -21,7 +21,7 @@ export function Header({ user, onLogout, isLoggingOut }: HeaderProps) {
             <div className="h-1.5 w-1.5 bg-slate-950 group-hover:bg-white" />
           </div>
           <span className="font-mono text-xs font-extrabold tracking-[0.2em] text-slate-950">
-            HOPAE PAYMENTS
+            Test PAYMENTS
           </span>
         </Link>
 
@@ -31,7 +31,7 @@ export function Header({ user, onLogout, isLoggingOut }: HeaderProps) {
             <span className="text-xs font-bold text-slate-950 leading-tight">{user.name}</span>
             <span className="font-mono text-[9px] font-medium text-slate-400 tracking-tight">{user.email}</span>
           </div>
-          
+
           <button
             type="button"
             onClick={onLogout}

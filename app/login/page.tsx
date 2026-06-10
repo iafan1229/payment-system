@@ -49,7 +49,7 @@ export default function LoginPage() {
   return (
     <main className="login-shell">
       <section className="login-card">
-        <p className="eyebrow">Hopae Payments</p>
+        <p className="eyebrow">Test Payments</p>
         <h1>결제 운영 대시보드</h1>
         <p className="lead">
           Sandbox와 Production 거래 흐름을 한 화면에서 확인하고, 상태 변화를 몇 초 안에 따라갈 수

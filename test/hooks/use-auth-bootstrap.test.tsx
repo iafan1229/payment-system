@@ -14,7 +14,7 @@ describe('useAuthBootstrap', () => {
   const mockUser: AuthUser = {
     id: 'usr_demo',
     name: 'Demo Merchant',
-    email: 'demo@hopae.com'
+    email: 'demo@test.com'
   };
 
   beforeEach(() => {

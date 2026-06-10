@@ -1,5 +1,5 @@
 export type Env = 'sandbox' | 'production';
-export const ENV_STORAGE_KEY = 'hopae:last-env';
+export const ENV_STORAGE_KEY = 'test:last-env';
 
 export function normalizeEnv(value: string | null | undefined): Env {
   return value === 'production' ? 'production' : 'sandbox';

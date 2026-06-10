@@ -127,13 +127,13 @@ test('GET /api/auth/me returns the current user when the auth cookie is valid', 
     'POST',
     '/api/auth/login',
     { 'Content-Type': 'application/json' },
-    JSON.stringify({ email: 'demo@hopae.com', password: 'password123' })
+    JSON.stringify({ email: 'demo@test.com', password: 'password123' })
   );
   const cookie = login.headers['set-cookie'][0];
   const me = await request('GET', '/api/auth/me', { Cookie: cookie });
 
   assert.equal(me.status, 200);
-  assert.equal(JSON.parse(me.body).user.email, 'demo@hopae.com');
+  assert.equal(JSON.parse(me.body).user.email, 'demo@test.com');
 });
 
 test('POST /api/auth/logout clears the auth cookie', async () => {
@@ -141,7 +141,7 @@ test('POST /api/auth/logout clears the auth cookie', async () => {
     'POST',
     '/api/auth/login',
     { 'Content-Type': 'application/json' },
-    JSON.stringify({ email: 'demo@hopae.com', password: 'password123' })
+    JSON.stringify({ email: 'demo@test.com', password: 'password123' })
   );
   const cookie = login.headers['set-cookie'][0];
   const logout = await request('POST', '/api/auth/logout', { Cookie: cookie });
@@ -230,7 +230,7 @@ git commit -m "feat: add mock auth session endpoints"
 
 ```json
 {
-  "name": "hopae-payment-dashboard",
+  "name": "test-payment-dashboard",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -392,10 +392,10 @@ describe('auth store', () => {
     useAuthStore.getState().setUser({
       id: 'usr_demo',
       name: 'Demo Merchant',
-      email: 'demo@hopae.com',
+      email: 'demo@test.com',
     });
 
-    expect(useAuthStore.getState().user?.email).toBe('demo@hopae.com');
+    expect(useAuthStore.getState().user?.email).toBe('demo@test.com');
     expect(useAuthStore.getState().isAuthResolved).toBe(true);
   });
 
@@ -612,7 +612,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { normalizeEnv, resolveInitialEnv, type Env } from '@/lib/env';
 
-const STORAGE_KEY = 'hopae:last-env';
+const STORAGE_KEY = 'test:last-env';
 
 export function useEnv() {
   const router = useRouter();
@@ -678,12 +678,12 @@ test('submits email and password', async () => {
 
   render(<LoginForm onSubmit={onSubmit} isPending={false} error={null} />);
 
-  await user.type(screen.getByLabelText('이메일'), 'demo@hopae.com');
+  await user.type(screen.getByLabelText('이메일'), 'demo@test.com');
   await user.type(screen.getByLabelText('비밀번호'), 'password123');
   await user.click(screen.getByRole('button', { name: '로그인' }));
 
   expect(onSubmit).toHaveBeenCalledWith({
-    email: 'demo@hopae.com',
+    email: 'demo@test.com',
     password: 'password123',
   });
 });
@@ -708,7 +708,7 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ onSubmit, isPending, error }: LoginFormProps) {
-  const [email, setEmail] = useState('demo@hopae.com');
+  const [email, setEmail] = useState('demo@test.com');
   const [password, setPassword] = useState('password123');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

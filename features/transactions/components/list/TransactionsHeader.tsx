@@ -8,7 +8,7 @@ export function TransactionsHeader({ userName }: TransactionsHeaderProps) {
   return (
     <div className="max-w-3xl mb-2">
       <span className="mb-2 block font-mono text-xs font-bold uppercase tracking-[0.2em] text-amber-600">
-        Hopae Payments
+        Test Payments
       </span>
       <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
         거래 흐름 분석
